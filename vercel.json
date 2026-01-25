@@ -22,8 +22,5 @@
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
       ]
     }
-  ],
-  "env": {
-    "GROQ_API_KEY": "@groq-api-key"
-  }
+  ]
 }
