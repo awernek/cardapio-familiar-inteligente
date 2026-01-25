@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Header } from './components/Header';
 import { ProfilesStep } from './components/steps/ProfilesStep';
 import { QuestionnaireStep } from './components/steps/QuestionnaireStep';
@@ -287,6 +288,7 @@ function App() {
           />
         )}
       </div>
+      <Analytics />
     </div>
   );
 }
