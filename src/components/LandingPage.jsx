@@ -117,7 +117,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               onClick={onStartTrial}
               className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all hover:scale-105 shadow-lg shadow-green-200"
             >
-              Experimentar Grátis
+              Começar Agora — É Grátis
               <ArrowRight size={20} />
             </button>
             <button
@@ -131,7 +131,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
 
           <p className="mt-6 text-sm text-gray-500 flex items-center justify-center gap-2">
             <Shield size={16} />
-            Sem cadastro para experimentar • Seus dados protegidos pela LGPD
+            Sem cadastro • 100% gratuito • Seus dados não são salvos
           </p>
         </div>
       </section>
@@ -255,14 +255,14 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
             Pronto para acabar com o estresse na cozinha?
           </h2>
           <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-            Experimente agora mesmo, sem precisar criar conta. 
+            Comece agora mesmo, sem cadastro. 
             Veja como a IA cria um cardápio personalizado para sua família.
           </p>
           <button
             onClick={onStartTrial}
             className="inline-flex items-center justify-center gap-2 bg-white text-green-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors"
           >
-            Experimentar Grátis Agora
+            Começar Grátis
             <ArrowRight size={20} />
           </button>
         </div>

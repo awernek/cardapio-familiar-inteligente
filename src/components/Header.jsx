@@ -10,18 +10,18 @@ export const Header = ({ step, title = "Cardápio Familiar Inteligente", subtitl
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 print:hidden">
-      {/* Banner de modo demonstração */}
+      {/* Banner informativo modo gratuito */}
       {isGuest && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <p className="text-sm text-amber-800">
-            <span className="font-semibold">Modo Demonstração</span> — Seus dados não serão salvos. 
+        <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mb-4 flex items-center justify-between gap-2">
+          <p className="text-xs sm:text-sm text-blue-700">
+            Modo gratuito — seus dados são usados apenas para gerar o cardápio e não são salvos.
           </p>
           <button
             onClick={onCreateAccount}
-            className="inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1 rounded-lg transition-colors"
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 whitespace-nowrap"
           >
-            <UserPlus size={14} />
-            Criar conta grátis
+            <UserPlus size={12} />
+            Criar conta
           </button>
         </div>
       )}
