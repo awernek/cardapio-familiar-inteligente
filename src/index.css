@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  body {
+    @apply m-0 p-0 font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Garantir compatibilidade cross-browser */
+  button, input, select, textarea {
+    font-family: inherit;
+  }
+  
+  /* Melhorar acessibilidade e usabilidade mobile */
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  input, select, textarea {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+}
+
+@layer utilities {
+  /* Utilitários para mobile-first */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ===== ESTILOS DE IMPRESSÃO ===== */
+@media print {
+  /* Reset para impressão */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    font-size: 11pt;
+    line-height: 1.4;
+    background: white !important;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Esconder elementos não necessários */
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  /* Container principal */
+  .min-h-screen {
+    min-height: auto !important;
+    background: white !important;
+    padding: 0 !important;
+  }
+  
+  .max-w-4xl {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+  }
+  
+  /* Cards - remover sombras, manter bordas */
+  .rounded-2xl, .rounded-xl, .rounded-lg {
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+    page-break-inside: avoid;
+  }
+  
+  /* Gradientes - substituir por cores sólidas */
+  .bg-gradient-to-r {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+  }
+  
+  .from-amber-500, .from-green-500, .from-blue-500 {
+    background: #f9fafb !important;
+    border-left: 4px solid #10b981 !important;
+  }
+  
+  /* Garantir que o texto das prioridades seja legível */
+  [class*="bg-white"][class*="10"] {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+  }
+  
+  /* Backdrop blur - remover na impressão */
+  [class*="backdrop"] {
+    backdrop-filter: none !important;
+  }
+  
+  /* Espaçamento reduzido */
+  .space-y-4, .space-y-6 {
+    gap: 8px !important;
+  }
+  
+  .p-4, .p-6, .sm\\:p-4, .sm\\:p-6 {
+    padding: 12px !important;
+  }
+  
+  .mb-4, .mb-6 {
+    margin-bottom: 8px !important;
+  }
+  
+  /* Títulos */
+  h2, h3 {
+    font-size: 14pt !important;
+    margin-bottom: 8px !important;
+    color: #1f2937 !important;
+  }
+  
+  /* Grid de lista de compras */
+  .grid-cols-1, .sm\\:grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  /* Quebra de página antes de lista de compras */
+  .bg-white:has(.text-blue-600) {
+    page-break-before: auto;
+  }
+  
+  /* Botão de reset - esconder */
+  button.bg-green-600 {
+    display: none !important;
+  }
+  
+  /* Cabeçalho de impressão */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #10b981;
+  }
+  
+  /* Footer de impressão */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}

@@ -1,0 +1,16 @@
+# Robots.txt para Cardápio Familiar Inteligente
+# https://cardapiofamiliar.com.br
+
+User-agent: *
+Allow: /
+
+# Bloquear acesso a arquivos de desenvolvimento
+Disallow: /src/
+Disallow: /.env
+Disallow: /node_modules/
+
+# Sitemap
+Sitemap: https://cardapiofamiliar.com.br/sitemap.xml
+
+# Crawl-delay (opcional, para não sobrecarregar o servidor)
+Crawl-delay: 1
