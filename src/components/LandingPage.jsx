@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { 
   Sparkles, 
-  Users, 
+  Users,
+  User,
   Calendar, 
   ShoppingCart, 
   Brain, 
