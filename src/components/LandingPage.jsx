@@ -73,32 +73,32 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
     {
       icon: <Brain className="text-purple-500" size={28} />,
       title: "IA Personalizada",
-      description: "Cardápios adaptados às necessidades nutricionais de cada membro da família"
+      description: "Cardápios adaptados às necessidades nutricionais de cada membro da família, incluindo crianças e idosos"
     },
     {
       icon: <Heart className="text-red-500" size={28} />,
       title: "Saúde Emocional",
-      description: "Considera estresse, sono e humor para sugerir alimentos que ajudam o bem-estar"
+      description: "Considera estresse, sono e humor para sugerir alimentos que ajudam o bem-estar mental"
     },
     {
       icon: <Calendar className="text-blue-500" size={28} />,
-      title: "Planejamento Semanal",
-      description: "Organize 7 dias de refeições de uma vez, economizando tempo e dinheiro"
+      title: "Cardápio Semanal Completo",
+      description: "Organize café, almoço, lanche e jantar para 7 dias, economizando tempo e dinheiro no mercado"
     },
     {
       icon: <ShoppingCart className="text-green-500" size={28} />,
-      title: "Lista de Compras",
-      description: "Lista automática e organizada por categoria para ir ao mercado"
+      title: "Lista de Compras Automática",
+      description: "Lista organizada por categoria para economizar no supermercado e evitar desperdício"
     },
     {
       icon: <Clock className="text-orange-500" size={28} />,
-      title: "Adapta à sua Rotina",
-      description: "Semana corrida? Receitas rápidas. Mais tempo? Pratos elaborados"
+      title: "Receitas para sua Rotina",
+      description: "Semana corrida? Receitas rápidas de 15 minutos. Mais tempo? Pratos elaborados"
     },
     {
       icon: <Users className="text-indigo-500" size={28} />,
-      title: "Toda a Família",
-      description: "Perfis individuais respeitando restrições e preferências de cada um"
+      title: "Para Toda a Família",
+      description: "Perfis individuais respeitando alergias, intolerâncias e preferências de cada um"
     }
   ];
 
@@ -156,8 +156,8 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           </h1>
           
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Cardápios semanais personalizados para cada membro da família, 
-            considerando saúde, rotina e orçamento.
+            Planejamento alimentar semanal para famílias de 2, 3, 4 ou mais pessoas. 
+            Cardápios personalizados que consideram saúde, rotina e orçamento.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -288,6 +288,47 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
         </div>
       </section>
 
+      {/* About Section */}
+      <section className="bg-white py-16 sm:py-24" id="sobre">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Por que criamos este app?
+              </h2>
+              <p className="text-lg text-gray-600">
+                Uma história real de uma família que enfrentava o mesmo problema que você
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
+                  <User size={32} className="text-white" />
+                </div>
+                <div className="space-y-4 text-gray-700">
+                  <p>
+                    <strong className="text-gray-900">Sou engenheiro de software, casado e pai de dois filhos.</strong> Como muitas famílias, vivemos a rotina corrida, a dúvida diária sobre o que preparar para comer e a dificuldade de conciliar alimentação saudável com tempo, orçamento e as necessidades de cada pessoa da casa.
+                  </p>
+                  <p>
+                    Percebi que a maior dificuldade não era cozinhar, mas <strong className="text-gray-900">decidir</strong>: o que comprar, o que preparar e como adaptar as refeições para diferentes fases da vida, níveis de estresse, apetite e rotina. As soluções existentes eram genéricas demais e não refletiam a realidade de uma família comum.
+                  </p>
+                  <p>
+                    Foi a partir dessa necessidade real que eu e minha esposa tivemos a ideia de criar o <strong className="text-gray-900">Cardápio Familiar Inteligente</strong>: uma ferramenta pensada para simplificar as decisões, organizar a lista de compras automaticamente e ajudar a planejar refeições possíveis, saudáveis e adaptadas a cada integrante da família.
+                  </p>
+                  <p className="text-sm text-gray-600 border-t border-gray-200 pt-4 mt-4">
+                    Atuo como engenheiro de software há mais de 10 anos. Essa experiência me permitiu transformar um problema cotidiano em uma solução prática, usando tecnologia para facilitar a vida das pessoas — começando pela minha própria família.
+                  </p>
+                  <p className="text-sm text-gray-600 italic">
+                    Este app não substitui nutricionistas nem promete fórmulas milagrosas. Ele existe para ajudar famílias reais a comer melhor dentro da sua realidade, semana após semana.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-3xl p-8 sm:p-12 text-center text-white max-w-4xl mx-auto">
@@ -296,8 +337,8 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
             Pronto para acabar com o estresse na cozinha?
           </h2>
           <p className="text-lg opacity-90 mb-8 max-w-xl mx-auto">
-            Comece agora mesmo, sem cadastro. 
-            Veja como a IA cria um cardápio personalizado para sua família.
+            Planeje o cardápio semanal da sua família em minutos. 
+            Ideal para famílias de 2, 3, 4 ou mais pessoas.
           </p>
           <button
             onClick={onStartTrial}
