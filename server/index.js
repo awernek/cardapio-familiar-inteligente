@@ -7,29 +7,84 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+// Rate limiting simples em memória
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hora
+const RATE_LIMIT_MAX = 20; // máximo 20 requisições por hora por IP
 
-// Log de requisições
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.path}`);
-  next();
-});
-
-// Rota para gerar cardápio com Google Gemini
-app.post('/api/generate-menu', async (req, res) => {
-  console.log('🚀 Iniciando geração do cardápio...');
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
   
+  if (!record) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+  
+  if (now > record.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0, resetAt: record.resetAt };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
+// CORS configurado para desenvolvimento
+const ALLOWED_ORIGINS = [
+  'https://cardapio-familiar-inteligente.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Permite requisições sem origin (ex: curl, Postman) em dev
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin) || origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Origem não permitida'), false);
+  },
+  credentials: true
+}));
+
+app.use(express.json({ limit: '1mb' })); // Limite reduzido para segurança
+
+// Rota para gerar cardápio
+app.post('/api/generate-menu', async (req, res) => {
+  // Rate limiting
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || 
+                   req.ip || 
+                   'unknown';
+  
+  const rateLimit = checkRateLimit(clientIp);
+  
+  res.setHeader('X-RateLimit-Limit', RATE_LIMIT_MAX);
+  res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
+  
+  if (!rateLimit.allowed) {
+    return res.status(429).json({ 
+      error: 'Muitas requisições. Aguarde um momento antes de tentar novamente.',
+      retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+    });
+  }
+
   try {
     const { prompt } = req.body;
     
     if (!prompt) {
-      console.error('❌ Prompt não fornecido');
       return res.status(400).json({ error: 'Prompt não fornecido' });
     }
-    
-    console.log('📝 Prompt recebido (primeiros 200 chars):', prompt.substring(0, 200));
+
+    // Validação do tamanho do prompt
+    if (prompt.length > 50000) {
+      return res.status(400).json({ error: 'Dados muito grandes' });
+    }
     
     // Prioridade: Groq (gratuito) > Google > Anthropic
     const groqKey = process.env.GROQ_API_KEY;
@@ -38,9 +93,6 @@ app.post('/api/generate-menu', async (req, res) => {
     
     const apiKey = groqKey || googleKey || anthropicKey;
     const provider = groqKey ? 'groq' : (googleKey ? 'google' : 'anthropic');
-    
-    console.log('🔑 Usando API:', provider.toUpperCase());
-    console.log('🔑 API Key configurada:', apiKey ? 'Sim (primeiros 10 chars: ' + apiKey.substring(0, 10) + '...)' : 'NÃO!');
 
     if (!apiKey) {
       return res.status(400).json({ 
@@ -50,7 +102,7 @@ app.post('/api/generate-menu', async (req, res) => {
 
     // ========== GROQ API (Gratuito e Rápido) ==========
     if (provider === 'groq') {
-      console.log('🚀 Usando Groq API com Llama...');
+      console.log('🚀 Gerando cardápio via Groq...');
       
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
@@ -73,38 +125,31 @@ app.post('/api/generate-menu', async (req, res) => {
         })
       });
 
-      console.log(`📥 Resposta Groq: status ${response.status}`);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erro Groq:', errorData);
         throw new Error(`Erro na API Groq: ${response.status} - ${errorData.error?.message || response.statusText}`);
       }
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
       
-      console.log(`📄 Conteúdo Groq recebido: ${content ? content.substring(0, 100) + '...' : 'VAZIO'}`);
-      
       if (!content) {
         throw new Error('Resposta da API Groq não contém conteúdo válido');
       }
       
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      console.log('🔧 Parseando JSON...');
       const menuJson = JSON.parse(cleanContent);
       
-      console.log('✅ Cardápio gerado com sucesso via Groq!');
+      console.log('✅ Cardápio gerado com sucesso!');
       return res.json(menuJson);
     }
 
     // ========== GOOGLE GEMINI API ==========
     if (provider === 'google') {
-      // Google Gemini API - modelos atualizados para 2025/2026
       const models = [
-        'gemini-2.0-flash',           // Modelo estável mais recente
-        'gemini-1.5-flash-latest',    // Versão latest do 1.5
-        'gemini-pro'                  // Fallback para modelo original
+        'gemini-2.0-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-pro'
       ];
       
       let lastError = null;
@@ -137,16 +182,11 @@ app.post('/api/generate-menu', async (req, res) => {
             }
           );
 
-          console.log(`📥 Resposta do ${model}: status ${response.status}`);
-
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error(`❌ Erro no ${model}:`, errorData);
             lastError = new Error(`Erro na API Google (${model}): ${response.status} - ${errorData.error?.message || response.statusText}`);
             
-            // Se for erro 404 (modelo não encontrado) ou 429 (rate limit), tenta próximo modelo
             if ((response.status === 404 || response.status === 429) && models.indexOf(model) < models.length - 1) {
-              console.log(`⏭️ Modelo ${model} com erro ${response.status}, tentando próximo...`);
               continue;
             }
             
@@ -156,26 +196,19 @@ app.post('/api/generate-menu', async (req, res) => {
           const data = await response.json();
           const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
           
-          console.log(`📄 Conteúdo recebido: ${content ? content.substring(0, 100) + '...' : 'VAZIO'}`);
-          
           if (!content) {
             if (models.indexOf(model) < models.length - 1) {
-              console.log(`⏭️ Conteúdo vazio no ${model}, tentando próximo...`);
               continue;
             }
             throw new Error('Resposta da API não contém conteúdo válido');
           }
           
-          // Limpar e parsear JSON
           const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-          
-          console.log('🔧 Parseando JSON...');
           const menuJson = JSON.parse(cleanContent);
           
           console.log('✅ Cardápio gerado com sucesso!');
           return res.json(menuJson);
         } catch (err) {
-          console.error(`❌ Erro no modelo ${model}:`, err.message);
           lastError = err;
           if (models.indexOf(model) < models.length - 1) {
             continue;
@@ -211,14 +244,13 @@ app.post('/api/generate-menu', async (req, res) => {
       const data = await response.json();
       const content = data.content[0].text;
       
-      // Limpar e parsear JSON
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const menuJson = JSON.parse(cleanContent);
       
       return res.json(menuJson);
     }
   } catch (error) {
-    console.error('Erro ao gerar cardápio:', error);
+    console.error('Erro ao gerar cardápio:', error.message);
     return res.status(500).json({ 
       error: error.message || 'Erro ao gerar cardápio. Tente novamente.' 
     });
@@ -247,4 +279,6 @@ app.listen(PORT, () => {
   } else {
     console.log(`⚠️  Nenhuma API configurada! Configure GROQ_API_KEY, GOOGLE_API_KEY ou ANTHROPIC_API_KEY no .env`);
   }
+  
+  console.log(`🔒 Rate limit: ${RATE_LIMIT_MAX} requisições/hora por IP`);
 });

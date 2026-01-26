@@ -1,8 +1,59 @@
 // Vercel Serverless Function para gerar cardápio
+// Com melhorias de segurança: CORS restrito, rate limiting, logs limpos
+
+// Rate limiting simples em memória (por IP)
+// Nota: Em produção com múltiplas instâncias, usar Redis ou Upstash
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hora
+const RATE_LIMIT_MAX = 20; // máximo 20 requisições por hora por IP
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+  
+  if (now > record.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0, resetAt: record.resetAt };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
+// Domínios permitidos para CORS
+const ALLOWED_ORIGINS = [
+  'https://cardapio-familiar-inteligente.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
+function getCorsOrigin(requestOrigin) {
+  if (ALLOWED_ORIGINS.includes(requestOrigin)) {
+    return requestOrigin;
+  }
+  // Em desenvolvimento, permite qualquer localhost
+  if (requestOrigin && requestOrigin.includes('localhost')) {
+    return requestOrigin;
+  }
+  return ALLOWED_ORIGINS[0]; // Default para produção
+}
+
 export default async function handler(req, res) {
-  // CORS headers
+  const origin = req.headers.origin || req.headers.referer || '';
+  const corsOrigin = getCorsOrigin(origin);
+  
+  // CORS headers - restrito aos domínios permitidos
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', corsOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -14,17 +65,34 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  console.log('🚀 Iniciando geração do cardápio...');
+  // Rate limiting
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || 
+                   req.headers['x-real-ip'] || 
+                   'unknown';
+  
+  const rateLimit = checkRateLimit(clientIp);
+  
+  res.setHeader('X-RateLimit-Limit', RATE_LIMIT_MAX);
+  res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
+  
+  if (!rateLimit.allowed) {
+    return res.status(429).json({ 
+      error: 'Muitas requisições. Aguarde um momento antes de tentar novamente.',
+      retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+    });
+  }
 
   try {
     const { prompt } = req.body;
 
     if (!prompt) {
-      console.error('❌ Prompt não fornecido');
       return res.status(400).json({ error: 'Prompt não fornecido' });
     }
 
-    console.log('📝 Prompt recebido (primeiros 200 chars):', prompt.substring(0, 200));
+    // Validação básica do prompt (evita payloads muito grandes)
+    if (prompt.length > 50000) {
+      return res.status(400).json({ error: 'Dados muito grandes' });
+    }
 
     // Prioridade: Groq (gratuito) > Google > Anthropic
     const groqKey = process.env.GROQ_API_KEY;
@@ -34,18 +102,14 @@ export default async function handler(req, res) {
     const apiKey = groqKey || googleKey || anthropicKey;
     const provider = groqKey ? 'groq' : (googleKey ? 'google' : 'anthropic');
 
-    console.log('🔑 Usando API:', provider.toUpperCase());
-
     if (!apiKey) {
       return res.status(400).json({
-        error: 'API key não configurada. Configure GROQ_API_KEY, GOOGLE_API_KEY ou ANTHROPIC_API_KEY nas variáveis de ambiente.'
+        error: 'Serviço temporariamente indisponível. Tente novamente mais tarde.'
       });
     }
 
     // ========== GROQ API (Gratuito e Rápido) ==========
     if (provider === 'groq') {
-      console.log('🚀 Usando Groq API com Llama...');
-
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -67,25 +131,21 @@ export default async function handler(req, res) {
         })
       });
 
-      console.log(`📥 Resposta Groq: status ${response.status}`);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erro Groq:', errorData);
-        throw new Error(`Erro na API Groq: ${response.status} - ${errorData.error?.message || response.statusText}`);
+        throw new Error(`Erro ao gerar cardápio: ${response.status}`);
       }
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
 
       if (!content) {
-        throw new Error('Resposta da API Groq não contém conteúdo válido');
+        throw new Error('Resposta inválida do serviço');
       }
 
       const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const menuJson = JSON.parse(cleanContent);
 
-      console.log('✅ Cardápio gerado com sucesso via Groq!');
       return res.status(200).json(menuJson);
     }
 
@@ -100,8 +160,6 @@ export default async function handler(req, res) {
       let lastError = null;
 
       for (const model of models) {
-        console.log(`🤖 Tentando modelo: ${model}`);
-
         try {
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleKey}`,
@@ -128,9 +186,7 @@ export default async function handler(req, res) {
           );
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            lastError = new Error(`Erro na API Google (${model}): ${response.status}`);
-
+            lastError = new Error(`Erro na API: ${response.status}`);
             if ((response.status === 404 || response.status === 429) && models.indexOf(model) < models.length - 1) {
               continue;
             }
@@ -142,13 +198,12 @@ export default async function handler(req, res) {
 
           if (!content) {
             if (models.indexOf(model) < models.length - 1) continue;
-            throw new Error('Resposta da API não contém conteúdo válido');
+            throw new Error('Resposta inválida do serviço');
           }
 
           const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           const menuJson = JSON.parse(cleanContent);
 
-          console.log('✅ Cardápio gerado com sucesso!');
           return res.status(200).json(menuJson);
         } catch (err) {
           lastError = err;
@@ -177,8 +232,7 @@ export default async function handler(req, res) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Erro na API Anthropic: ${response.status}`);
+        throw new Error(`Erro ao gerar cardápio: ${response.status}`);
       }
 
       const data = await response.json();
@@ -190,9 +244,10 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error('Erro ao gerar cardápio:', error);
+    // Log genérico sem detalhes sensíveis
+    console.error('Erro na geração de cardápio');
     return res.status(500).json({
-      error: error.message || 'Erro ao gerar cardápio. Tente novamente.'
+      error: 'Erro ao gerar cardápio. Tente novamente em alguns segundos.'
     });
   }
 }
