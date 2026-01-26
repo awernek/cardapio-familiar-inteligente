@@ -202,6 +202,33 @@ export const AuthForm = () => {
             </button>
           </form>
 
+          {/* Divisor */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">ou continue com</span>
+            </div>
+          </div>
+
+          {/* Botão de login com Google */}
+          <button
+            type="button"
+            onClick={() => handleSocialLogin('google')}
+            disabled={socialLoading === 'google'}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {socialLoading === 'google' ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+            ) : (
+              <>
+                <GoogleIcon />
+                <span className="text-sm font-medium text-gray-700">Continuar com Google</span>
+              </>
+            )}
+          </button>
+
           {/* Toggle login/cadastro */}
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
