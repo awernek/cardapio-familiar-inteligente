@@ -23,6 +23,8 @@ import {
 export const LandingPage = ({ onStartTrial, onLogin }) => {
   const [showDemo, setShowDemo] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [contactStatus, setContactStatus] = useState(null); // 'sending' | 'success' | 'error'
 
@@ -315,8 +317,18 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               <span className="font-semibold text-gray-800">Cardápio Familiar Inteligente</span>
             </div>
             <div className="flex gap-6 text-sm text-gray-600">
-              <a href="#" className="hover:text-green-600">Privacidade</a>
-              <a href="#" className="hover:text-green-600">Termos</a>
+              <button 
+                onClick={() => setShowPrivacy(true)}
+                className="hover:text-green-600"
+              >
+                Privacidade
+              </button>
+              <button 
+                onClick={() => setShowTerms(true)}
+                className="hover:text-green-600"
+              >
+                Termos
+              </button>
               <button 
                 onClick={() => setShowContact(true)}
                 className="hover:text-green-600 flex items-center gap-1"
@@ -390,6 +402,104 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               Experimentar Agora
               <ArrowRight size={18} />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Modal */}
+      {showPrivacy && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-xl font-bold text-gray-800">Política de Privacidade</h3>
+              <button 
+                onClick={() => setShowPrivacy(false)}
+                className="text-gray-500 hover:text-gray-700 p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto text-sm text-gray-700 space-y-4">
+              <p><strong>Última atualização:</strong> Janeiro de 2026</p>
+              
+              <h4 className="font-semibold text-gray-900">1. Coleta de Dados</h4>
+              <p>No modo gratuito (sem cadastro), coletamos apenas os dados que você fornece para gerar o cardápio. Esses dados são processados temporariamente e <strong>não são armazenados</strong> em nossos servidores.</p>
+              
+              <h4 className="font-semibold text-gray-900">2. Dados Sensíveis</h4>
+              <p>Informações de saúde (peso, altura, condições médicas) são consideradas dados sensíveis pela LGPD. Esses dados são usados exclusivamente para personalizar as sugestões alimentares e são tratados com máxima segurança.</p>
+              
+              <h4 className="font-semibold text-gray-900">3. Uso da Inteligência Artificial</h4>
+              <p>Utilizamos serviços de IA de terceiros (Groq/Llama) para gerar os cardápios. Os dados enviados são processados de forma anônima e não são utilizados para treinamento de modelos.</p>
+              
+              <h4 className="font-semibold text-gray-900">4. Cookies e Analytics</h4>
+              <p>Utilizamos o Vercel Analytics para entender como o site é utilizado. Não coletamos informações pessoais identificáveis através deste serviço.</p>
+              
+              <h4 className="font-semibold text-gray-900">5. Seus Direitos (LGPD)</h4>
+              <p>Você tem direito a: acesso aos seus dados, correção, exclusão, portabilidade e revogação do consentimento. Para exercer esses direitos, entre em contato pelo email wernekdev@gmail.com.</p>
+              
+              <h4 className="font-semibold text-gray-900">6. Contato</h4>
+              <p>Para dúvidas sobre privacidade: <a href="mailto:wernekdev@gmail.com" className="text-green-600 hover:underline">wernekdev@gmail.com</a></p>
+            </div>
+            <div className="p-4 border-t">
+              <button
+                onClick={() => setShowPrivacy(false)}
+                className="w-full bg-green-600 text-white py-2.5 rounded-xl font-semibold hover:bg-green-700"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Terms Modal */}
+      {showTerms && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-xl font-bold text-gray-800">Termos de Uso</h3>
+              <button 
+                onClick={() => setShowTerms(false)}
+                className="text-gray-500 hover:text-gray-700 p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto text-sm text-gray-700 space-y-4">
+              <p><strong>Última atualização:</strong> Janeiro de 2026</p>
+              
+              <h4 className="font-semibold text-gray-900">1. Aceitação</h4>
+              <p>Ao utilizar o Cardápio Familiar Inteligente, você concorda com estes termos de uso.</p>
+              
+              <h4 className="font-semibold text-gray-900">2. Descrição do Serviço</h4>
+              <p>O Cardápio Familiar Inteligente é uma ferramenta de planejamento alimentar que utiliza inteligência artificial para gerar sugestões de cardápios personalizados.</p>
+              
+              <h4 className="font-semibold text-gray-900">3. Limitações</h4>
+              <p><strong>Este serviço NÃO substitui orientação médica ou nutricional profissional.</strong> As sugestões são geradas por IA e devem ser consideradas apenas como referência para planejamento.</p>
+              
+              <h4 className="font-semibold text-gray-900">4. Responsabilidades do Usuário</h4>
+              <p>Você é responsável por: fornecer informações precisas, consultar profissionais de saúde para dietas específicas, e verificar alergias e restrições antes de preparar as receitas.</p>
+              
+              <h4 className="font-semibold text-gray-900">5. Isenção de Responsabilidade</h4>
+              <p>Não nos responsabilizamos por: reações alérgicas, problemas de saúde decorrentes do uso das sugestões, ou resultados diferentes dos esperados. Consulte sempre um nutricionista.</p>
+              
+              <h4 className="font-semibold text-gray-900">6. Propriedade Intelectual</h4>
+              <p>Todo o conteúdo do site (design, código, textos) é de propriedade do Cardápio Familiar Inteligente e está protegido por direitos autorais.</p>
+              
+              <h4 className="font-semibold text-gray-900">7. Modificações</h4>
+              <p>Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações significativas serão comunicadas aos usuários.</p>
+              
+              <h4 className="font-semibold text-gray-900">8. Contato</h4>
+              <p>Para dúvidas: <a href="mailto:wernekdev@gmail.com" className="text-green-600 hover:underline">wernekdev@gmail.com</a></p>
+            </div>
+            <div className="p-4 border-t">
+              <button
+                onClick={() => setShowTerms(false)}
+                className="w-full bg-green-600 text-white py-2.5 rounded-xl font-semibold hover:bg-green-700"
+              >
+                Entendi
+              </button>
+            </div>
           </div>
         </div>
       )}
