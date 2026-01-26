@@ -166,7 +166,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               onClick={onStartTrial}
               className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all hover:scale-105 shadow-lg shadow-green-200"
             >
-              Começar Agora — É Grátis
+              Montar Meu Cardápio Grátis
               <ArrowRight size={20} />
             </button>
             <button
@@ -345,7 +345,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
             onClick={onStartTrial}
             className="inline-flex items-center justify-center gap-2 bg-white text-green-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors"
           >
-            Começar Grátis
+            Montar Meu Cardápio Agora
             <ArrowRight size={20} />
           </button>
         </div>
