@@ -39,7 +39,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: 'YOUR_ACCESS_KEY_HERE', // Substitua pela sua chave do Web3Forms
+          access_key: 'c818a0b7-514a-4bc6-b144-2d6e193f0f49',
           from_name: contactForm.name,
           email: contactForm.email,
           message: contactForm.message,
