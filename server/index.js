@@ -232,5 +232,19 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  console.log(`📝 Configure GOOGLE_API_KEY ou ANTHROPIC_API_KEY no arquivo .env do servidor`);
+  
+  // Verificar qual API está configurada
+  const groqKey = process.env.GROQ_API_KEY;
+  const googleKey = process.env.GOOGLE_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  
+  if (groqKey) {
+    console.log(`✅ Usando API: Groq (Llama 3.3 70B)`);
+  } else if (googleKey) {
+    console.log(`✅ Usando API: Google Gemini`);
+  } else if (anthropicKey) {
+    console.log(`✅ Usando API: Anthropic Claude`);
+  } else {
+    console.log(`⚠️  Nenhuma API configurada! Configure GROQ_API_KEY, GOOGLE_API_KEY ou ANTHROPIC_API_KEY no .env`);
+  }
 });
