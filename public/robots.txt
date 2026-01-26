@@ -1,5 +1,5 @@
 # Robots.txt para Cardápio Familiar Inteligente
-# https://cardapiofamiliar.com.br
+# https://cardapio-familiar-inteligente.vercel.app
 
 User-agent: *
 Allow: /
@@ -10,7 +10,4 @@ Disallow: /.env
 Disallow: /node_modules/
 
 # Sitemap
-Sitemap: https://cardapiofamiliar.com.br/sitemap.xml
-
-# Crawl-delay (opcional, para não sobrecarregar o servidor)
-Crawl-delay: 1
+Sitemap: https://cardapio-familiar-inteligente.vercel.app/sitemap.xml

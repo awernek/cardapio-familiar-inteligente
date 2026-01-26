@@ -13,11 +13,59 @@ import {
   Star,
   Play,
   Shield,
-  Zap
+  Zap,
+  Mail,
+  Send,
+  X,
+  MessageCircle
 } from 'lucide-react';
 
 export const LandingPage = ({ onStartTrial, onLogin }) => {
   const [showDemo, setShowDemo] = useState(false);
+  const [showContact, setShowContact] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [contactStatus, setContactStatus] = useState(null); // 'sending' | 'success' | 'error'
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setContactStatus('sending');
+    
+    try {
+      // Usando Web3Forms (gratuito) - funciona sem backend
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: 'YOUR_ACCESS_KEY_HERE', // Substitua pela sua chave do Web3Forms
+          from_name: contactForm.name,
+          email: contactForm.email,
+          message: contactForm.message,
+          subject: `Contato - Cardápio Familiar: ${contactForm.name}`,
+          to: 'wernekdev@gmail.com'
+        })
+      });
+      
+      if (response.ok) {
+        setContactStatus('success');
+        setContactForm({ name: '', email: '', message: '' });
+        setTimeout(() => {
+          setShowContact(false);
+          setContactStatus(null);
+        }, 3000);
+      } else {
+        throw new Error('Erro ao enviar');
+      }
+    } catch (err) {
+      // Fallback: abre email client
+      const mailtoLink = `mailto:wernekdev@gmail.com?subject=${encodeURIComponent(`Contato - Cardápio Familiar: ${contactForm.name}`)}&body=${encodeURIComponent(`Nome: ${contactForm.name}\nEmail: ${contactForm.email}\n\nMensagem:\n${contactForm.message}`)}`;
+      window.open(mailtoLink, '_blank');
+      setContactStatus('success');
+      setTimeout(() => {
+        setShowContact(false);
+        setContactStatus(null);
+      }, 2000);
+    }
+  };
 
   const features = [
     {
@@ -58,21 +106,18 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
     { number: "3", title: "Receba o cardápio", description: "IA gera um plano personalizado para 7 dias" },
   ];
 
-  const testimonials = [
+  const faqs = [
     { 
-      name: "Marina S.", 
-      text: "Finalmente parei de pensar 'o que fazer pro jantar?' todo dia!", 
-      rating: 5 
+      question: "O app é realmente gratuito?", 
+      answer: "Sim! O modo gratuito permite gerar cardápios completos sem limite. No futuro, teremos planos pagos com funcionalidades extras como histórico e perfis salvos." 
     },
     { 
-      name: "Carlos R.", 
-      text: "Minha esposa tem restrições alimentares e o app considera tudo perfeitamente.", 
-      rating: 5 
+      question: "Preciso criar uma conta?", 
+      answer: "Não é obrigatório. Você pode usar imediatamente sem cadastro. Os dados são usados apenas para gerar o cardápio e não são salvos." 
     },
     { 
-      name: "Ana P.", 
-      text: "A lista de compras organizada me fez economizar tempo e dinheiro.", 
-      rating: 5 
+      question: "A IA substitui um nutricionista?", 
+      answer: "Não. O app é uma ferramenta de planejamento. Para orientação nutricional específica ou tratamento de condições de saúde, consulte um profissional." 
     },
   ];
 
@@ -136,22 +181,20 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
         </div>
       </section>
 
-      {/* Social Proof */}
+      {/* Value Props */}
       <section className="container mx-auto px-4 py-8">
-        <div className="flex flex-wrap items-center justify-center gap-8 text-gray-500 text-sm">
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-gray-600 text-sm">
           <div className="flex items-center gap-2">
-            <div className="flex">
-              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#FFB800" stroke="#FFB800" />)}
-            </div>
-            <span>4.9/5 de avaliação</span>
+            <CheckCircle2 size={18} className="text-green-500" />
+            <span>100% Gratuito</span>
           </div>
           <div className="flex items-center gap-2">
-            <Users size={20} />
-            <span>+2.500 famílias ativas</span>
+            <Zap size={18} className="text-yellow-500" />
+            <span>Cardápio em segundos</span>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar size={20} />
-            <span>+15.000 cardápios gerados</span>
+            <Shield size={18} className="text-blue-500" />
+            <span>Sem necessidade de cadastro</span>
           </div>
         </div>
       </section>
@@ -217,30 +260,25 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* FAQ */}
       <section className="container mx-auto px-4 py-16 sm:py-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            O que estão falando
+            Perguntas Frequentes
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {testimonials.map((testimonial, index) => (
+        <div className="max-w-2xl mx-auto space-y-4">
+          {faqs.map((faq, index) => (
             <div 
               key={index}
               className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
             >
-              <div className="flex gap-1 mb-3">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} size={16} fill="#FFB800" stroke="#FFB800" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 italic">
-                "{testimonial.text}"
-              </p>
-              <p className="font-medium text-gray-900">
-                {testimonial.name}
+              <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                {faq.question}
+              </h3>
+              <p className="text-gray-600">
+                {faq.answer}
               </p>
             </div>
           ))}
@@ -279,7 +317,13 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
             <div className="flex gap-6 text-sm text-gray-600">
               <a href="#" className="hover:text-green-600">Privacidade</a>
               <a href="#" className="hover:text-green-600">Termos</a>
-              <a href="#" className="hover:text-green-600">Contato</a>
+              <button 
+                onClick={() => setShowContact(true)}
+                className="hover:text-green-600 flex items-center gap-1"
+              >
+                <Mail size={14} />
+                Contato
+              </button>
             </div>
             <p className="text-sm text-gray-500">
               © 2026 Cardápio Familiar. Feito com ❤️ no Brasil.
@@ -287,6 +331,15 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           </div>
         </div>
       </footer>
+
+      {/* Floating Contact Button */}
+      <button
+        onClick={() => setShowContact(true)}
+        className="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 z-40"
+        aria-label="Fale conosco"
+      >
+        <MessageCircle size={24} />
+      </button>
 
       {/* Demo Modal */}
       {showDemo && (
@@ -337,6 +390,101 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               Experimentar Agora
               <ArrowRight size={18} />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Modal */}
+      {showContact && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2">
+                <Mail className="text-green-600" size={24} />
+                <h3 className="text-xl font-bold text-gray-800">Fale Conosco</h3>
+              </div>
+              <button 
+                onClick={() => { setShowContact(false); setContactStatus(null); }}
+                className="text-gray-500 hover:text-gray-700 p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {contactStatus === 'success' ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="text-green-600" size={32} />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Mensagem enviada!</h4>
+                <p className="text-gray-600">Obrigado pelo contato. Responderemos em breve.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={contactForm.name}
+                    onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Seu nome"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={contactForm.email}
+                    onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Mensagem <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                    placeholder="Como podemos ajudar?"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={contactStatus === 'sending'}
+                  className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  {contactStatus === 'sending' ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={18} />
+                      Enviar Mensagem
+                    </>
+                  )}
+                </button>
+                <p className="text-xs text-gray-500 text-center">
+                  Ou envie diretamente para{' '}
+                  <a href="mailto:wernekdev@gmail.com" className="text-green-600 hover:underline">
+                    wernekdev@gmail.com
+                  </a>
+                </p>
+              </form>
+            )}
           </div>
         </div>
       )}
