@@ -5,11 +5,15 @@ import { QuestionnaireStep } from './components/steps/QuestionnaireStep';
 import { WeeklyContextStep } from './components/steps/WeeklyContextStep';
 import { ReportStep } from './components/steps/ReportStep';
 import { MenuStep } from './components/steps/MenuStep';
+import { ProgressStep } from './components/steps/ProgressStep';
 import { AuthForm } from './components/auth/AuthForm';
 import { ConsentScreen } from './components/auth/ConsentScreen';
 import { LandingPage } from './components/LandingPage';
 import { useHistory } from './hooks/useHistory';
 import { useAuth } from './contexts/AuthContext';
+import { useGamification } from './hooks/useGamification';
+import { AchievementToast } from './components/gamification/AchievementToast';
+import { GamificationCard } from './components/gamification/GamificationCard';
 import { generateWeeklyPriorities, generateInsights, compareWithLastWeek } from './utils/menuLogic';
 import { getOrCreateFamily, saveMenu, getMenuHistory } from './services/menuService';
 import { isSupabaseAvailable } from './lib/supabase';
@@ -20,6 +24,7 @@ function App() {
   
   const [step, setStep] = useState('profiles');
   const [profiles, setProfiles] = useState([]);
+  const [familyLocation, setFamilyLocation] = useState({ state: '', city: '' });
   const [currentQuestionnaireIndex, setCurrentQuestionnaireIndex] = useState(0);
   const [individualAnswers, setIndividualAnswers] = useState({});
   const [weeklyContext, setWeeklyContext] = useState({});
@@ -30,6 +35,16 @@ function App() {
   const [menuHistory, setMenuHistory] = useState([]);
   
   const { weekHistory, saveWeekToHistory } = useHistory();
+  const { 
+    newAchievement, 
+    dismissAchievement, 
+    getMissions, 
+    getAchievements, 
+    getLevel,
+    trackMenuGenerated,
+    trackProfilesCount,
+    trackShoppingListUsed
+  } = useGamification();
 
   // Inicializar família ao carregar (após autenticação e aceite de termos)
   useEffect(() => {
@@ -189,6 +204,10 @@ function App() {
       }
     }
     
+    // Tracking de gamificação
+    await trackMenuGenerated();
+    await trackProfilesCount(profiles.length);
+    
     setMenuData(menuData);
     setStep('menu');
   };
@@ -210,6 +229,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-3 sm:p-4">
+      {/* Toast de nova conquista */}
+      <AchievementToast 
+        achievement={newAchievement} 
+        onDismiss={dismissAchievement} 
+      />
+      
       <main className="max-w-4xl mx-auto" role="main">
         <Header step={step} onCreateAccount={() => { exitGuestMode(); setShowLogin(true); }} />
 
@@ -217,6 +242,8 @@ function App() {
         {step === 'profiles' && (
           <ProfilesStep
             profiles={profiles}
+            familyLocation={familyLocation}
+            onUpdateLocation={setFamilyLocation}
             onAddProfile={addProfile}
             onUpdateProfile={updateProfile}
             onRemoveProfile={removeProfile}
@@ -246,6 +273,7 @@ function App() {
             profiles={profiles}
             individualAnswers={individualAnswers}
             weeklyContext={weeklyContext}
+            familyLocation={familyLocation}
             onUpdateContext={setWeeklyContext}
             onGenerateMenu={handleGenerateMenu}
             onBack={() => {
@@ -284,6 +312,23 @@ function App() {
             expandedDay={expandedDay}
             onToggleDay={setExpandedDay}
             onReset={resetApp}
+            onViewProgress={() => setStep('progress')}
+            onShoppingListUsed={trackShoppingListUsed}
+            gamification={{
+              missions: getMissions(),
+              achievements: getAchievements(),
+              level: getLevel()
+            }}
+          />
+        )}
+
+        {/* Step: Progresso */}
+        {step === 'progress' && (
+          <ProgressStep
+            profiles={profiles}
+            individualAnswers={individualAnswers}
+            weekHistory={weekHistory}
+            onBack={() => setStep('menu')}
           />
         )}
       </main>

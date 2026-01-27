@@ -40,6 +40,22 @@
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  
+  /* Animação para toast de conquistas */
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* ===== ESTILOS DE IMPRESSÃO ===== */

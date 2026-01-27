@@ -1,4 +1,4 @@
-import { Calendar, ShoppingCart, ChevronDown, ChevronUp, Printer, Share2 } from 'lucide-react';
+import { Calendar, ShoppingCart, ChevronDown, ChevronUp, Printer, Share2, Wallet, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react';
 import { generateWeeklyPriorities, generateInsights } from '../../utils/menuLogic';
 
 /**
@@ -9,6 +9,12 @@ const formatMenuForShare = (menuData, profiles) => {
   let text = `🍽️ *CARDÁPIO SEMANAL*\n`;
   text += `👨‍👩‍👧‍👦 Família: ${familyNames}\n`;
   text += `📅 Gerado em: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+  
+  // Estimativa de custo
+  if (menuData.costEstimate) {
+    text += `💰 *Estimativa de Custo:* R$ ${menuData.costEstimate.min} - R$ ${menuData.costEstimate.max}\n`;
+    text += `_(${profiles.length} pessoa${profiles.length > 1 ? 's' : ''}, 7 dias)_\n\n`;
+  }
   
   text += `💡 *Dicas da Semana:*\n${menuData.weeklyTips}\n\n`;
   
@@ -31,6 +37,11 @@ const formatMenuForShare = (menuData, profiles) => {
       text += `  ☐ ${item}\n`;
     });
   });
+
+  // Dica de economia
+  if (menuData.costEstimate?.tips) {
+    text += `\n💡 *Dica de economia:*\n${menuData.costEstimate.tips}\n`;
+  }
   
   return text;
 };
@@ -54,6 +65,8 @@ const handlePrint = () => {
 /**
  * Componente da etapa de cardápio gerado
  */
+import { GamificationCard } from '../gamification/GamificationCard';
+
 export const MenuStep = ({
   menuData,
   profiles,
@@ -62,7 +75,10 @@ export const MenuStep = ({
   lastWeekComparison,
   expandedDay,
   onToggleDay,
-  onReset
+  onReset,
+  onViewProgress,
+  onShoppingListUsed,
+  gamification
 }) => {
   const priorities = generateWeeklyPriorities(profiles, individualAnswers, weeklyContext);
   const insights = generateInsights(profiles, individualAnswers);
@@ -115,6 +131,15 @@ export const MenuStep = ({
           <ChevronDown size={18} />
           {allExpanded ? 'Recolher Dias' : 'Expandir Todos'}
         </button>
+        {onViewProgress && (
+          <button
+            onClick={onViewProgress}
+            className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-600 transition-colors text-sm"
+          >
+            <TrendingUp size={18} />
+            Ver Progresso
+          </button>
+        )}
       </div>
       {/* Prioridades da Semana */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl shadow-lg p-4 sm:p-6">
@@ -153,6 +178,54 @@ export const MenuStep = ({
         <h3 className="font-bold text-lg sm:text-xl mb-2">💡 Dicas para esta semana</h3>
         <p className="text-sm sm:text-base">{menuData.weeklyTips}</p>
       </div>
+
+      {/* Estimativa de Custo */}
+      {menuData.costEstimate && (
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-2 border-green-100">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+              <Wallet className="text-green-600" size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-gray-800">Estimativa de Custo Semanal</h3>
+              <p className="text-xs text-gray-500">Valores aproximados para sua região</p>
+            </div>
+          </div>
+
+          {/* Valor estimado */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 mb-4">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-3xl sm:text-4xl font-bold text-green-700">
+                R$ {menuData.costEstimate.min}
+              </span>
+              <span className="text-gray-400 text-xl">–</span>
+              <span className="text-3xl sm:text-4xl font-bold text-green-700">
+                R$ {menuData.costEstimate.max}
+              </span>
+            </div>
+            <p className="text-center text-sm text-gray-600 mt-2">
+              para {profiles.length} {profiles.length === 1 ? 'pessoa' : 'pessoas'} • 7 dias
+            </p>
+          </div>
+
+          {/* Dica de economia */}
+          {menuData.costEstimate.tips && (
+            <div className="flex items-start gap-3 bg-amber-50 rounded-lg p-3 mb-3">
+              <TrendingDown className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
+              <div>
+                <p className="text-sm font-medium text-amber-800">Dica para economizar</p>
+                <p className="text-xs text-amber-700">{menuData.costEstimate.tips}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Disclaimer */}
+          <div className="flex items-start gap-2 text-xs text-gray-500">
+            <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+            <p>{menuData.costEstimate.disclaimer || 'Valores estimados. Preços podem variar conforme estabelecimento e região.'}</p>
+          </div>
+        </div>
+      )}
 
       {/* Observações Individuais */}
       {menuData.individualNotes && Object.keys(menuData.individualNotes).length > 0 && (
@@ -263,7 +336,10 @@ export const MenuStep = ({
       </div>
 
       {/* Lista de Compras */}
-      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+      <div 
+        className="bg-white rounded-2xl shadow-lg p-4 sm:p-6"
+        onClick={() => onShoppingListUsed && onShoppingListUsed()}
+      >
         <div className="flex items-center gap-2 mb-4 sm:mb-6">
           <ShoppingCart className="text-blue-600 flex-shrink-0" size={24} />
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Lista de Compras</h2>
@@ -287,6 +363,15 @@ export const MenuStep = ({
           ))}
         </div>
       </div>
+
+      {/* Gamificação */}
+      {gamification && (
+        <GamificationCard 
+          missions={gamification.missions}
+          achievements={gamification.achievements}
+          level={gamification.level}
+        />
+      )}
 
       <button
         onClick={onReset}

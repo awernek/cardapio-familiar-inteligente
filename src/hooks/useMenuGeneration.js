@@ -92,6 +92,23 @@ const calculateBMI = (weight, height) => {
 };
 
 /**
+ * Converte nível de orçamento para descrição detalhada
+ */
+const getBudgetDescription = (budget) => {
+  const descriptions = {
+    'bem_apertado': 'Bem apertado (priorizar ingredientes baratos, evitar proteínas caras)',
+    'controlado': 'Controlado (equilibrar custo-benefício, proteínas em dias alternados)',
+    'confortavel': 'Confortável (pode variar ingredientes, proteínas diárias)',
+    'livre': 'Livre (sem restrição financeira)',
+    // Valores antigos para compatibilidade
+    'apertado': 'Apertado (priorizar ingredientes baratos)',
+    'normal': 'Normal (equilibrado)',
+    'flexível': 'Flexível (pode variar)'
+  };
+  return descriptions[budget] || budget;
+};
+
+/**
  * Constrói o prompt para a IA
  */
 const buildPrompt = (profilesWithAnswers, weeklyContext, priorities, insights) => {
@@ -133,8 +150,9 @@ ${p.cookingSkill ? `   • Habilidade culinária: ${p.cookingSkill}` : ''}
 `).join('\n')}
 
 CONTEXTO GERAL DA SEMANA:
+${weeklyContext.location?.city && weeklyContext.location?.state ? `• Localização: ${weeklyContext.location.city}, ${weeklyContext.location.state} (considere ingredientes regionais e preços locais)` : ''}
 • Nível de correria: ${weeklyContext.busy}
-• Orçamento: ${weeklyContext.budget}
+• Orçamento: ${getBudgetDescription(weeklyContext.budget)}
 • Tempo disponível para cozinhar: ${weeklyContext.cookingTime}
 • Idas ao mercado: ${weeklyContext.groceryTrips}
 • Realidade da semana: ${weeklyContext.cookingReality}
@@ -153,12 +171,20 @@ Crie um cardápio semanal (7 dias) que seja ALTAMENTE ACIONÁVEL baseado nas PRI
 
 REGRAS CRÍTICAS DE PERSONALIZAÇÃO:
 
-0. **PRIORIDADES SÃO LEI - TODO O CARDÁPIO DEVE SERVIR ÀS PRIORIDADES:**
+0. **REALIDADE BRASILEIRA - INGREDIENTES ACESSÍVEIS:**
+   - Todas as receitas e ingredientes DEVEM ser adequados à realidade alimentar brasileira
+   - Use APENAS ingredientes encontrados facilmente em supermercados, feiras e atacarejos do Brasil
+   - EVITE: ingredientes importados, gourmet, orgânicos caros ou pouco comuns no dia a dia
+   - PRIORIZE: arroz, feijão, macarrão, frango, carne moída, ovos, legumes da estação, frutas comuns
+   - Exemplos de ingredientes a EVITAR: quinoa, amaranto, tofu (a menos que pedido), cogumelos especiais, queijos importados, azeite trufado, temperos exóticos
+   - Exemplos de ingredientes a USAR: arroz, feijão, batata, cenoura, chuchu, abobrinha, frango, carne, ovo, banana, maçã, laranja, leite, queijo mussarela, requeijão
+
+1. **PRIORIDADES SÃO LEI - TODO O CARDÁPIO DEVE SERVIR ÀS PRIORIDADES:**
    - Leia as prioridades acima e use como DIRETRIZ CENTRAL
    - Cada refeição deve contribuir para pelo menos uma prioridade
    - Explique nas observações como está atendendo as prioridades
 
-1. **USE OS INSIGHTS PARA DECISÕES ESPECÍFICAS:**
+2. **USE OS INSIGHTS PARA DECISÕES ESPECÍFICAS:**
    - Se "evitar picos de cafeína" → máximo 1 café pela manhã, chás descafeinados
    - Se "estresse piora à noite" → jantar com alimentos calmantes (magnésio, triptofano)
    - Se "apetite baixo manhã" → café reforçado, almoço mais calórico
@@ -166,16 +192,16 @@ REGRAS CRÍTICAS DE PERSONALIZAÇÃO:
    - Se "não seguiu por falta de tempo" → receitas EXTRA rápidas (10-15min)
    - Se "enjoou" → variedade máxima, sabores diferentes
 
-2. **ADAPTE POR MOMENTO DO DIA:**
+3. **ADAPTE POR MOMENTO DO DIA:**
    - Estresse manhã → café calmante
    - Fome baixa manhã → café denso e pequeno
    - Problemas de sono → jantar leve, anti-estimulante
 
-3. **CONSIDERE LOGÍSTICA REAL:**
+4. **CONSIDERE LOGÍSTICA REAL:**
    - ${weeklyContext.groceryTrips === '1' ? 'Uma ida ao mercado → priorize alimentos duráveis, planeje sobras' : 'Múltiplas idas → pode usar alimentos frescos'}
    - ${weeklyContext.cookingReality === 'prefere-pratico' ? 'Prefere prático → use semi-prontos, monte rápido' : weeklyContext.cookingReality === 'improviso' ? 'Improviso → receitas flexíveis, ingredientes básicos' : 'Consegue cozinhar → pode ser mais elaborado'}
 
-4. **APRENDA COM O PASSADO:**
+5. **APRENDA COM O PASSADO:**
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'falta-tempo') ? '→ Alguém não seguiu por falta de tempo: cardápio EXTRA prático esta semana' : ''}
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'enjoou') ? '→ Alguém enjoou: MÁXIMA variedade e novidade' : ''}
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'nao-ajudou') ? '→ Não ajudou emocionalmente: foco em alimentos para saúde mental' : ''}
@@ -218,8 +244,23 @@ FORMATO DA RESPOSTA (JSON):
   "weeklyTips": "Dicas gerais considerando os insights específicos de cada pessoa",
   "individualNotes": {
     "Nome da Pessoa": "Como este cardápio atende aos insights específicos desta pessoa"
+  },
+  "costEstimate": {
+    "min": 150,
+    "max": 250,
+    "currency": "BRL",
+    "disclaimer": "Valores estimados para a região informada. Preços podem variar conforme estabelecimento e sazonalidade.",
+    "tips": "Dica para economizar: compre frutas da estação e aproveite promoções de proteínas."
   }
 }
+
+IMPORTANTE SOBRE A ESTIMATIVA DE CUSTO:
+- Baseie-se na localização informada (${weeklyContext.location?.city || 'não informada'}, ${weeklyContext.location?.state || ''})
+- Considere o número de pessoas: ${profilesWithAnswers.length}
+- Considere o orçamento informado: ${weeklyContext.budget}
+- Dê um intervalo realista (min-max) em reais
+- Inclua uma dica de economia relevante
+- O disclaimer deve alertar sobre variações regionais
 
 Responda APENAS com o JSON, sem explicações adicionais.`;
 };

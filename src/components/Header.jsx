@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 /**
  * Componente de cabeçalho com indicador de progresso
  */
-export const Header = ({ step, title = "Cardápio Familiar Inteligente", subtitle = "Alimentação personalizada para cada membro da família", onCreateAccount }) => {
+export const Header = ({ step, title = "Cardápio Familiar Inteligente", subtitle = "Alimentação personalizada para toda a família", onCreateAccount }) => {
   const { user, signOut, isGuest, exitGuestMode } = useAuth();
   const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Visitante';
 

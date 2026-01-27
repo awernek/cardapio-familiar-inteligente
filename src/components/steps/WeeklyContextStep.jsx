@@ -1,61 +1,62 @@
-import { Calendar, CheckCircle, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, CheckCircle, Sparkles, AlertCircle, CheckCircle2, Clock, ShoppingCart, ChefHat, Wallet } from 'lucide-react';
 import { useMenuGeneration } from '../../hooks/useMenuGeneration';
 
 /**
- * Componente de label com indicador de obrigatório/opcional
+ * Componente de pergunta conversacional
  */
-const Label = ({ children, required = false }) => (
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    {children}
-    {required && <span className="text-red-500 ml-1">*</span>}
-  </label>
-);
-
-/**
- * Componente de select com validação visual
- */
-const SelectField = ({ 
-  label, 
-  required = false, 
+const QuestionCard = ({ 
+  icon: Icon, 
+  iconBg = 'bg-blue-100',
+  iconColor = 'text-blue-600',
+  question, 
+  hint,
   value, 
-  children,
-  showValidation = false,
-  ...props 
+  onChange, 
+  options,
+  isComplete 
 }) => {
-  const hasValue = value !== '' && value !== undefined && value !== null;
-  const showSuccess = showValidation && hasValue;
-  const showError = showValidation && required && !hasValue;
-  
   return (
-    <div>
-      {label && <Label required={required}>{label}</Label>}
-      <div className="relative">
-        <select
-          value={value}
-          {...props}
-          className={`w-full px-3 sm:px-4 py-2.5 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors appearance-none bg-white
-            ${showError ? 'border-red-300 bg-red-50' : ''}
-            ${showSuccess ? 'border-green-300 bg-green-50' : ''}
-            ${!showError && !showSuccess ? 'border-gray-300' : ''}
-          `}
-        >
-          {children}
-        </select>
-        {showSuccess && (
-          <CheckCircle2 className="absolute right-8 top-1/2 -translate-y-1/2 text-green-500" size={18} />
-        )}
+    <div className={`p-4 rounded-xl border-2 transition-all ${
+      isComplete ? 'border-green-200 bg-green-50/50' : 'border-gray-100 bg-gray-50'
+    }`}>
+      <div className="flex items-start gap-3 mb-3">
+        <div className={`w-8 h-8 ${iconBg} rounded-full flex items-center justify-center flex-shrink-0`}>
+          <Icon className={iconColor} size={16} />
+        </div>
+        <div className="flex-1">
+          <p className="font-medium text-gray-800">{question}</p>
+          {hint && <p className="text-xs text-gray-500 mt-0.5">{hint}</p>}
+        </div>
+        {isComplete && <CheckCircle2 className="text-green-500 flex-shrink-0" size={18} />}
+      </div>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {options.map(option => (
+          <button
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              value === option.value
+                ? 'bg-green-600 text-white shadow-sm'
+                : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
 /**
- * Componente da etapa de contexto semanal
+ * Componente da etapa de contexto semanal - versão conversacional
  */
 export const WeeklyContextStep = ({
   profiles,
   individualAnswers,
   weeklyContext,
+  familyLocation,
   onUpdateContext,
   onGenerateMenu,
   onBack,
@@ -68,9 +69,15 @@ export const WeeklyContextStep = ({
     console.log('Profiles:', profiles);
     console.log('Individual Answers:', individualAnswers);
     console.log('Weekly Context:', weeklyContext);
+    console.log('Family Location:', familyLocation);
     
     try {
-      const menuData = await generateMenu(profiles, individualAnswers, weeklyContext);
+      // Passa a localização junto com o contexto semanal
+      const contextWithLocation = {
+        ...weeklyContext,
+        location: familyLocation
+      };
+      const menuData = await generateMenu(profiles, individualAnswers, contextWithLocation);
       console.log('✅ Cardápio gerado com sucesso:', menuData);
       
       if (menuData) {
@@ -89,124 +96,146 @@ export const WeeklyContextStep = ({
   const filledRequired = requiredFields.filter(f => weeklyContext[f] && weeklyContext[f] !== '').length;
   const totalRequired = requiredFields.length;
   const canGenerate = filledRequired === totalRequired;
-  const showValidation = filledRequired > 0;
+
+  // Opções para cada pergunta
+  const busyOptions = [
+    { value: 'tranquila', label: 'Tranquila' },
+    { value: 'normal', label: 'Normal' },
+    { value: 'corrida', label: 'Corrida' },
+    { value: 'caótica', label: 'Caótica' }
+  ];
+
+  const budgetOptions = [
+    { value: 'bem_apertado', label: 'Bem apertado' },
+    { value: 'controlado', label: 'Controlado' },
+    { value: 'confortavel', label: 'Confortável' },
+    { value: 'livre', label: 'Livre' }
+  ];
+
+  const groceryOptions = [
+    { value: '1', label: '1 vez' },
+    { value: '2', label: '2 vezes' },
+    { value: '3-mais', label: '3 ou mais' }
+  ];
+
+  const cookingTimeOptions = [
+    { value: 'mínimo', label: 'Até 15min' },
+    { value: 'pouco-tempo', label: '15-30min' },
+    { value: 'tempo-normal', label: '30min-1h' },
+    { value: 'muito-tempo', label: 'Mais de 1h' }
+  ];
+
+  const cookingRealityOptions = [
+    { value: 'consegue-cozinhar', label: 'Normal' },
+    { value: 'prefere-pratico', label: 'Prático' },
+    { value: 'improviso', label: 'Improviso' }
+  ];
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Calendar className="text-blue-600 flex-shrink-0" size={24} />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Contexto da Semana</h2>
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <span className="text-xl">📅</span>
         </div>
-        <div className={`text-sm font-medium ${canGenerate ? 'text-green-600' : 'text-gray-500'}`}>
-          {canGenerate ? (
-            <span className="flex items-center gap-1">
-              <CheckCircle2 size={16} />
-              Pronto!
-            </span>
-          ) : (
-            `${filledRequired}/${totalRequired}`
-          )}
+        <div className="flex-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+            Como será essa semana?
+          </h2>
+          <p className="text-gray-600 text-sm mt-1">
+            Essas informações ajudam a criar um cardápio que realmente funcione na correria do dia a dia.
+          </p>
+        </div>
+        <div className={`text-sm font-medium px-2 py-1 rounded-full ${
+          canGenerate ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+        }`}>
+          {filledRequired}/{totalRequired}
         </div>
       </div>
-      
-      {/* Instrução */}
-      <p className="text-sm text-gray-500 mb-4 sm:mb-5">
-        Conte como será sua semana. Campos com <span className="text-red-500">*</span> são obrigatórios.
-      </p>
 
       {/* Resumo das pessoas */}
-      <div className="bg-green-50 border border-green-100 p-3 sm:p-4 rounded-lg mb-5">
-        <p className="text-xs sm:text-sm font-semibold text-green-900 mb-2">Questionários concluídos:</p>
+      <div className="bg-green-50 border border-green-100 p-3 rounded-lg mb-5">
+        <p className="text-xs font-semibold text-green-800 mb-2">Cardápio para:</p>
         <div className="flex flex-wrap gap-2">
           {profiles.map(p => (
-            <span key={p.id} className="bg-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm text-gray-700 flex items-center gap-1 border border-green-200">
-              <CheckCircle size={14} className="text-green-600 flex-shrink-0" />
+            <span key={p.id} className="bg-white px-2 py-1 rounded-full text-xs text-gray-700 flex items-center gap-1 border border-green-200">
+              <CheckCircle size={12} className="text-green-600" />
               {p.name}
             </span>
           ))}
         </div>
       </div>
 
+      {/* Perguntas conversacionais */}
+      <div className="space-y-4">
+        <QuestionCard
+          icon={Clock}
+          iconBg="bg-orange-100"
+          iconColor="text-orange-600"
+          question="Como está a correria essa semana?"
+          hint="Isso ajuda a definir a complexidade das receitas"
+          value={weeklyContext.busy}
+          onChange={(val) => onUpdateContext({...weeklyContext, busy: val})}
+          options={busyOptions}
+          isComplete={!!weeklyContext.busy}
+        />
+
+        <QuestionCard
+          icon={Wallet}
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
+          question="E o orçamento para comida essa semana?"
+          hint="Vou sugerir ingredientes que cabem no bolso"
+          value={weeklyContext.budget}
+          onChange={(val) => onUpdateContext({...weeklyContext, budget: val})}
+          options={budgetOptions}
+          isComplete={!!weeklyContext.budget}
+        />
+
+        <QuestionCard
+          icon={ShoppingCart}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
+          question="Quantas vezes vai ao mercado?"
+          hint="Ajuda a planejar ingredientes frescos vs. duráveis"
+          value={weeklyContext.groceryTrips}
+          onChange={(val) => onUpdateContext({...weeklyContext, groceryTrips: val})}
+          options={groceryOptions}
+          isComplete={!!weeklyContext.groceryTrips}
+        />
+
+        <QuestionCard
+          icon={ChefHat}
+          iconBg="bg-purple-100"
+          iconColor="text-purple-600"
+          question="Quanto tempo para cozinhar por dia?"
+          value={weeklyContext.cookingTime}
+          onChange={(val) => onUpdateContext({...weeklyContext, cookingTime: val})}
+          options={cookingTimeOptions}
+          isComplete={!!weeklyContext.cookingTime}
+        />
+
+        <QuestionCard
+          icon={ChefHat}
+          iconBg="bg-amber-100"
+          iconColor="text-amber-600"
+          question="Como vai ser na cozinha?"
+          hint="Cozinhar do zero, usar práticos ou improvisar?"
+          value={weeklyContext.cookingReality}
+          onChange={(val) => onUpdateContext({...weeklyContext, cookingReality: val})}
+          options={cookingRealityOptions}
+          isComplete={!!weeklyContext.cookingReality}
+        />
+      </div>
+
       {/* Botão Gerar Relatório */}
       <button
         onClick={onViewReport}
-        className="w-full mb-5 py-3 border-2 border-blue-500 text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
+        className="w-full mt-5 py-3 border-2 border-blue-500 text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
       >
         <Calendar size={18} />
         Ver Relatório Completo
       </button>
-
-      {/* Formulário */}
-      <div className="space-y-4">
-        <SelectField
-          label="Nível de correria da família esta semana"
-          required
-          value={weeklyContext.busy || ''}
-          onChange={(e) => onUpdateContext({...weeklyContext, busy: e.target.value})}
-          showValidation={showValidation}
-        >
-          <option value="">Selecione...</option>
-          <option value="tranquila">Tranquila</option>
-          <option value="normal">Normal</option>
-          <option value="corrida">Corrida</option>
-          <option value="caótica">Caótica</option>
-        </SelectField>
-
-        <SelectField
-          label="Orçamento para compras esta semana"
-          required
-          value={weeklyContext.budget || ''}
-          onChange={(e) => onUpdateContext({...weeklyContext, budget: e.target.value})}
-          showValidation={showValidation}
-        >
-          <option value="">Selecione...</option>
-          <option value="flexível">Flexível</option>
-          <option value="normal">Normal</option>
-          <option value="apertado">Apertado</option>
-        </SelectField>
-
-        <SelectField
-          label="Quantas vezes vai ao mercado esta semana"
-          required
-          value={weeklyContext.groceryTrips || ''}
-          onChange={(e) => onUpdateContext({...weeklyContext, groceryTrips: e.target.value})}
-          showValidation={showValidation}
-        >
-          <option value="">Selecione...</option>
-          <option value="1">1 vez (compra grande)</option>
-          <option value="2">2 vezes</option>
-          <option value="3-mais">3 ou mais vezes</option>
-        </SelectField>
-
-        <SelectField
-          label="Tempo disponível para cozinhar por dia"
-          required
-          value={weeklyContext.cookingTime || ''}
-          onChange={(e) => onUpdateContext({...weeklyContext, cookingTime: e.target.value})}
-          showValidation={showValidation}
-        >
-          <option value="">Selecione...</option>
-          <option value="muito-tempo">Mais de 1h (tempo para cozinhar)</option>
-          <option value="tempo-normal">30min - 1h (tempo razoável)</option>
-          <option value="pouco-tempo">15-30min (corrido)</option>
-          <option value="mínimo">Menos de 15min (só o básico)</option>
-        </SelectField>
-
-        <SelectField
-          label="Realidade da cozinha nesta semana"
-          required
-          value={weeklyContext.cookingReality || ''}
-          onChange={(e) => onUpdateContext({...weeklyContext, cookingReality: e.target.value})}
-          showValidation={showValidation}
-        >
-          <option value="">Selecione...</option>
-          <option value="consegue-cozinhar">Consigo cozinhar normalmente</option>
-          <option value="prefere-pratico">Prefiro opções práticas/semi-prontas</option>
-          <option value="improviso">Vou me virar no improviso</option>
-        </SelectField>
-      </div>
 
       {/* Erro da API */}
       {error && (
@@ -217,15 +246,12 @@ export const WeeklyContextStep = ({
       )}
 
       {/* Mensagem de validação */}
-      {showValidation && !canGenerate && (
+      {!canGenerate && filledRequired > 0 && (
         <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mt-4 text-sm">
           <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
-          <div>
-            <p className="text-amber-800 font-medium">Preencha todos os campos</p>
-            <p className="text-amber-700">
-              Faltam {totalRequired - filledRequired} campo(s) para gerar o cardápio
-            </p>
-          </div>
+          <p className="text-amber-800">
+            Responda todas as perguntas para gerar o cardápio ({totalRequired - filledRequired} restante{totalRequired - filledRequired > 1 ? 's' : ''})
+          </p>
         </div>
       )}
 
