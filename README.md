@@ -14,60 +14,17 @@ Planejamento alimentar semanal personalizado com IA para toda a família.
 - **Cardápio Personalizado**: 7 dias de refeições geradas por IA
 - **Lista de Compras**: Organizada por categoria, pronta para ir ao mercado
 - **Imprimir/PDF**: Exporte o cardápio para imprimir ou salvar
-- **Compartilhar**: Envie via WhatsApp
 - **Histórico**: Acompanhe a evolução das semanas anteriores
 - **Gamificação**: Conquistas e missões para manter a motivação
 
 ## 🛠️ Stack
 
-| Tecnologia | Uso |
-|------------|-----|
-| React 18 | Frontend |
-| Vite | Build tool |
-| Tailwind CSS | Estilização |
-| Vitest | Testes unitários e integração |
-| Express | Backend (servidor local) |
-| Node.js | Runtime do servidor |
-| Nodemon | Auto-reload em desenvolvimento |
-| Groq API (Llama 3.3) | Geração de cardápios (padrão) |
-| Google Gemini / Anthropic Claude | Fallback para geração |
-| Supabase | Autenticação e banco de dados |
-| Vercel | Hospedagem (Serverless) |
-
-## 🎯 Qualidade de Código
-
-O projeto segue boas práticas de desenvolvimento:
-
-- ✅ **Clean Code**: Código organizado, legível e bem estruturado
-- ✅ **Type Safety**: PropTypes em todos os componentes
-- ✅ **Testes**: Cobertura de testes unitários e de integração
-- ✅ **Performance**: Memoização, lazy loading e otimizações React
-- ✅ **Acessibilidade**: ARIA labels, navegação por teclado, HTML semântico
-- ✅ **Error Handling**: Error Boundaries e tratamento centralizado de erros
-- ✅ **Segurança**: Variáveis de ambiente validadas, sem chaves expostas
-- ✅ **Logging**: Sistema de logs condicional (dev/prod)
-
-## 🚀 Deploy em Produção
-
-O app está hospedado na Vercel com deploy automático a cada push.
-
-**URL de Produção**: https://cardapio-familiar-inteligente.vercel.app
-
-### Variáveis de Ambiente (Vercel)
-
-#### Frontend (Vite)
-| Variável | Descrição | Obrigatória |
-|----------|-----------|-------------|
-| `VITE_API_URL` | URL do servidor backend (padrão: http://localhost:3001) | Não |
-| `VITE_SUPABASE_URL` | URL do projeto Supabase | Não |
-| `VITE_SUPABASE_ANON_KEY` | Chave anon do Supabase | Não |
-| `VITE_WEB3FORMS_ACCESS_KEY` | Chave de acesso do Web3Forms (formulário de contato) | Não |
-
-#### Backend (Server)
-| Variável | Descrição | Obrigatória |
-|----------|-----------|-------------|
-| `GROQ_API_KEY` | Chave da API Groq (ou `GOOGLE_API_KEY` / `ANTHROPIC_API_KEY`) | Sim |
-| `PORT` | Porta do servidor (padrão: 3001) | Não |
+**Frontend:** React 18, Vite, Tailwind CSS  
+**Backend:** Express, Node.js (servidor local)  
+**IA:** Groq (Llama 3.3), Google Gemini, Anthropic Claude  
+**Banco:** Supabase  
+**Hospedagem:** Vercel  
+**Testes:** Vitest
 
 ## 💻 Desenvolvimento Local
 
@@ -81,35 +38,18 @@ npm install
 
 ### 2. Configurar variáveis
 
-Crie um arquivo `.env` na raiz (copie de `.env.example`):
-
+**Frontend** - Crie `.env` na raiz:
 ```env
-# URL do servidor backend
 VITE_API_URL=http://localhost:3001
-
-# Supabase (opcional - para autenticação e histórico)
-VITE_SUPABASE_URL=sua_url_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anon
-
-# Web3Forms (opcional - para formulário de contato)
-VITE_WEB3FORMS_ACCESS_KEY=sua_chave_web3forms
+VITE_SUPABASE_URL=sua_url_supabase  # Opcional
+VITE_SUPABASE_ANON_KEY=sua_chave_anon  # Opcional
 ```
 
-E um arquivo `server/.env` (copie de `server/.env.example`):
-
+**Backend** - Crie `server/.env`:
 ```env
-# Chave da API de IA (escolha uma)
-GROQ_API_KEY=sua_chave_groq
-# OU
-# GOOGLE_API_KEY=sua_chave_google
-# OU
-# ANTHROPIC_API_KEY=sua_chave_anthropic
-
-# Porta do servidor (opcional)
-PORT=3001
+GROQ_API_KEY=sua_chave_groq  # Ou GOOGLE_API_KEY ou ANTHROPIC_API_KEY
+PORT=3001  # Opcional
 ```
-
-**Nota:** As variáveis marcadas como opcionais permitem que o app funcione sem elas, mas algumas funcionalidades podem estar limitadas.
 
 ### 3. Executar
 
@@ -117,14 +57,8 @@ PORT=3001
 ```bash
 cd server
 npm install
-npm run dev  # Usa nodemon para auto-reload
+npm run dev
 ```
-
-O servidor estará disponível em `http://localhost:3001` com:
-- Rate limiting: 20 requisições/hora por IP
-- Validação automática de entrada
-- Métricas disponíveis em `/api/metrics`
-- Health check em `/api/health`
 
 **Terminal 2 - Frontend:**
 ```bash
@@ -135,275 +69,48 @@ Acesse: http://localhost:3000
 
 ## 🧪 Testes
 
-O projeto usa **Vitest** para testes unitários e de integração.
-
-### Executar Testes
-
 ```bash
-# Modo watch (desenvolvimento)
+# Frontend
 npm test
 
-# Interface visual
-npm run test:ui
-
-# Com cobertura de código
-npm run test:coverage
+# Backend
+cd server && npm test
 ```
 
-### Cobertura de Testes
-
-**Frontend:**
-- ✅ **Utils**: `bmi.js`, `menuLogic.js`, `storage.js`, `logger.js`
-- ✅ **Hooks**: `useGamification`, `useHistory`, `useMenuGeneration`
-- ✅ **Integração**: Fluxos completos de criação de perfil e geração de cardápio
-
-**Backend:**
-- ✅ **Utils**: `rateLimiter`, `errorHandler`, `parseJsonResponse`, `envValidation` (~80% cobertura)
-- ✅ **Services**: `groqService`, `googleService`, `anthropicService`, `apiProvider` (~70% cobertura)
-- ✅ **Integração**: Endpoints completos, rate limiting, validação
-
-Veja mais detalhes:
-- Frontend: `src/test/README.md`
-- Backend: `server/test/README.md`
-
-## ♿ Acessibilidade
-
-O projeto segue as diretrizes WCAG e boas práticas de acessibilidade:
-
-- ✅ **ARIA Labels**: Todos os elementos interativos têm labels descritivos
-- ✅ **Navegação por Teclado**: Focus visible, skip links, suporte completo a Tab/Enter/Espaço
-- ✅ **HTML Semântico**: Uso correto de `<header>`, `<main>`, `<nav>`, `<section>`, `<article>`
-- ✅ **Roles Semânticos**: `role="banner"`, `role="main"`, `role="alert"`, etc.
-- ✅ **Screen Readers**: Suporte completo com `aria-labelledby`, `aria-describedby`
-- ✅ **Estados Dinâmicos**: `aria-expanded`, `aria-disabled`, `aria-busy`, `aria-live`
-- ✅ **Formulários**: Labels associados com `htmlFor`, `fieldset`/`legend` para grupos
-
-## 🔧 Melhorias Implementadas
-
-O projeto passou por **16 sprints de melhorias** focadas em qualidade de código (8 no frontend + 8 no backend):
-
-### Frontend (8 Sprints)
-
-**Sprint 1: Fundação e Logging**
-- Sistema de logging condicional (dev/prod)
-- Centralização de constantes
-- Remoção de `console.log` espalhados
-
-**Sprint 2: Validação de Tipos**
-- PropTypes em todos os componentes
-- JSDoc em hooks e funções principais
-- Tipos centralizados em `src/types/`
-
-**Sprint 3: Refatoração de Componentes**
-- Componentes grandes divididos em menores
-- Extração de lógica para hooks customizados
-- Separação de responsabilidades
-
-**Sprint 4: Performance e Otimizações**
-- `useMemo` e `useCallback` para evitar re-renders
-- `React.memo` em componentes filhos
-- Lazy loading com `React.lazy` e `Suspense`
-
-**Sprint 5: Segurança e Variáveis de Ambiente**
-- Validação de variáveis de ambiente
-- Remoção de chaves hardcoded
-- Documentação de variáveis obrigatórias/opcionais
-
-**Sprint 6: Tratamento de Erros**
-- Error Boundary para capturar erros React
-- Tratamento centralizado de erros
-- Mensagens amigáveis ao usuário
-
-**Sprint 7: Testes Básicos**
-- Configuração do Vitest
-- Testes unitários para utils e hooks
-- Testes de integração para fluxos principais
-
-**Sprint 8: Acessibilidade e UX**
-- ARIA labels e roles semânticos
-- Navegação por teclado completa
-- HTML semântico e melhorias de UX
-
-### Backend (8 Sprints)
-
-**Sprint 1: Fundação e Logging**
-- Sistema de logging condicional (`logger.js`)
-- Constantes centralizadas (`constants.js`)
-- Substituição de `console.log` por logger
-
-**Sprint 2: Modularização - Utils e Config**
-- Rate limiter modularizado com limpeza automática
-- Error handler centralizado
-- Parser de JSON unificado
-- Configuração CORS modularizada
-
-**Sprint 3: Modularização - Services**
-- Services isolados (Groq, Google, Anthropic)
-- Factory de providers (`apiProvider.js`)
-- Fallback automático entre modelos
-
-**Sprint 4: Validação e Segurança**
-- Validação de variáveis de ambiente no startup
-- Middleware de validação de requisições
-- Sanitização robusta de entrada
-
-**Sprint 5: Tratamento de Erros Avançado**
-- Classes de erro customizadas (`AppError`, `ApiError`, etc.)
-- Middleware global de tratamento de erros
-- Categorização e logging estruturado
-
-**Sprint 6: Documentação e JSDoc**
-- README.md completo do servidor
-- JSDoc em todas as funções principais
-- Documentação de módulos e serviços
-
-**Sprint 7: Testes Básicos**
-- Configuração Vitest
-- Testes unitários para utils (~80% cobertura)
-- Testes para services com mocks (~70% cobertura)
-- Testes de integração
-
-**Sprint 8: Melhorias de Rate Limiting**
-- Detecção melhorada de IP (suporte a proxies reversos)
-- Métricas detalhadas (endpoint `/api/metrics`)
-- Limpeza otimizada de registros expirados
-
-Veja mais detalhes:
-- Frontend: `PLANO_SPRINTS.md`
-- Backend: `server/PLANO_SPRINTS.md`
-
-## 📁 Estrutura do Projeto
+## 📁 Estrutura
 
 ```
-├── api/                          # Serverless Functions (Vercel)
-│   ├── generate-menu.js          # Endpoint de geração
-│   └── health.js                 # Health check
-├── src/
-│   ├── components/               # Componentes React
-│   │   ├── LandingPage.jsx       # Página inicial
-│   │   ├── Header.jsx            # Cabeçalho
-│   │   ├── ProfileForm.jsx       # Formulário de perfil
-│   │   ├── ErrorBoundary.jsx    # Error Boundary
-│   │   ├── AppRouter.jsx         # Router de steps
-│   │   ├── auth/                 # Login/Cadastro
-│   │   ├── gamification/         # Componentes de gamificação
-│   │   └── steps/                # Etapas do fluxo
-│   │       ├── ProfilesStep.jsx
-│   │       ├── QuestionnaireStep.jsx
-│   │       ├── WeeklyContextStep.jsx
-│   │       ├── MenuStep.jsx
-│   │       │   └── MenuStep/     # Sub-componentes
-│   │       │       ├── MenuActions.jsx
-│   │       │       ├── DayCard.jsx
-│   │       │       ├── ShoppingList.jsx
-│   │       │       └── CostEstimate.jsx
-│   │       ├── ReportStep.jsx
-│   │       └── ProgressStep.jsx
-│   ├── contexts/                 # Context API
-│   │   └── AuthContext.jsx       # Autenticação
-│   ├── hooks/                    # Hooks customizados
-│   │   ├── useAppNavigation.js   # Navegação entre steps
-│   │   ├── useAppInitialization.js # Inicialização
-│   │   ├── useProfiles.js         # Gerenciamento de perfis
-│   │   ├── useMenuGeneration.js   # Geração de cardápio
-│   │   ├── useGamification.js     # Gamificação
-│   │   ├── useHistory.js          # Histórico
-│   │   └── __tests__/              # Testes dos hooks
-│   ├── services/                  # Serviços
-│   │   └── menuService.js         # Serviço Supabase
-│   ├── utils/                     # Funções utilitárias
-│   │   ├── logger.js              # Sistema de logs
-│   │   ├── errorHandler.js        # Tratamento de erros
-│   │   ├── envValidation.js       # Validação de env vars
-│   │   ├── promptBuilder.js      # Construção de prompts
-│   │   ├── menuLogic.js           # Lógica de negócio
-│   │   ├── bmi.js                 # Cálculo de IMC
-│   │   ├── storage.js             # LocalStorage
-│   │   ├── browserCompatibility.js
-│   │   └── __tests__/              # Testes das utils
-│   ├── constants/                 # Constantes
-│   │   ├── steps.js               # Constantes de steps
-│   │   └── index.js
-│   ├── types/                     # Tipos e PropTypes
-│   │   └── index.js
-│   ├── test/                      # Configuração de testes
-│   │   ├── setup.js               # Setup do Vitest
-│   │   └── README.md
-│   ├── __tests__/                 # Testes de integração
-│   ├── App.jsx                    # Componente principal
-│   └── main.jsx                   # Entry point
-├── server/                        # Backend local (dev)
-│   ├── config/                    # Configurações
-│   │   ├── constants.js           # Constantes centralizadas
-│   │   └── cors.js                # Configuração CORS
-│   ├── middleware/                # Middlewares Express
-│   │   ├── errorHandler.js        # Tratamento global de erros
-│   │   └── validateRequest.js     # Validação de requisições
-│   ├── services/                   # Serviços de API
-│   │   ├── apiProvider.js          # Factory de providers
-│   │   ├── groqService.js          # Integração Groq
-│   │   ├── googleService.js        # Integração Google Gemini
-│   │   ├── anthropicService.js     # Integração Anthropic
-│   │   └── __tests__/              # Testes dos services
-│   ├── utils/                      # Utilitários
-│   │   ├── logger.js               # Sistema de logging
-│   │   ├── errorHandler.js         # Tratamento de erros
-│   │   ├── errors.js               # Classes de erro customizadas
-│   │   ├── envValidation.js        # Validação de env vars
-│   │   ├── parseJsonResponse.js    # Parsing de JSON
-│   │   ├── rateLimiter.js          # Rate limiting com métricas
-│   │   └── __tests__/              # Testes das utils
-│   ├── test/                       # Configuração de testes
-│   │   ├── setup.js                # Setup do Vitest
-│   │   └── README.md
-│   ├── __tests__/                  # Testes de integração
-│   ├── index.js                    # Entry point do servidor
-│   ├── nodemon.json                # Configuração nodemon
-│   ├── vitest.config.js            # Configuração Vitest
-│   ├── README.md                   # Documentação do servidor
-│   ├── PLANO_SPRINTS.md            # Plano das melhorias
-│   └── ANÁLISE_SERVIDOR.md         # Análise do servidor
-├── supabase/                      # Migrations e schema
-│   ├── schema.sql
-│   ├── rls_update.sql
-│   └── migrations/
-├── public/                        # Assets estáticos
-├── vitest.config.js               # Configuração Vitest
-└── vercel.json                    # Config Vercel
+├── src/              # Frontend React
+├── server/           # Backend Express (modularizado)
+├── supabase/         # Migrations e schema
+└── public/           # Assets estáticos
 ```
 
-## 📊 Analytics
+## 🚀 Deploy
 
-Analytics habilitado via Vercel Analytics no dashboard do projeto.
+O app está hospedado na Vercel com deploy automático.
 
-## 🔒 Privacidade
+**URL:** https://cardapio-familiar-inteligente.vercel.app
 
-- Modo gratuito: dados não são salvos, usados apenas para gerar o cardápio
-- Dados sensíveis (saúde) tratados conforme LGPD
-- Usuários podem solicitar exclusão a qualquer momento
+### Variáveis de Ambiente (Vercel)
 
-## 📚 Documentação Adicional
+**Frontend:** `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (opcionais)  
+**Backend:** `GROQ_API_KEY` ou `GOOGLE_API_KEY` ou `ANTHROPIC_API_KEY` (obrigatória)
 
-**Frontend:**
-- **[ANÁLISE_PROJETO.md](./ANÁLISE_PROJETO.md)**: Análise detalhada da estrutura e qualidade do código
-- **[PLANO_SPRINTS.md](./PLANO_SPRINTS.md)**: Plano completo das 8 sprints de melhorias do frontend
-- **[src/test/README.md](./src/test/README.md)**: Guia completo sobre testes do frontend
+## 📚 Documentação
 
-**Backend:**
+- **[PLANO_SPRINTS.md](./PLANO_SPRINTS.md)**: Melhorias do frontend (8 sprints)
 - **[server/README.md](./server/README.md)**: Documentação completa do servidor
-- **[server/PLANO_SPRINTS.md](./server/PLANO_SPRINTS.md)**: Plano completo das 8 sprints de melhorias do backend
-- **[server/ANÁLISE_SERVIDOR.md](./server/ANÁLISE_SERVIDOR.md)**: Análise detalhada do servidor
-- **[server/test/README.md](./server/test/README.md)**: Guia completo sobre testes do backend
+- **[server/PLANO_SPRINTS.md](./server/PLANO_SPRINTS.md)**: Melhorias do backend (8 sprints)
 
-## 🤝 Contribuindo
+## 🎯 Qualidade
 
-Contribuições são bem-vindas! Por favor:
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'feat: Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+- ✅ Clean Code e estrutura modular
+- ✅ Testes unitários e de integração
+- ✅ Acessibilidade (WCAG)
+- ✅ Performance otimizada
+- ✅ Error handling robusto
+- ✅ Documentação completa
 
 ## 📝 Licença
 
