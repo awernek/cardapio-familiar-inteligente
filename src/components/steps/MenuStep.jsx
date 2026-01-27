@@ -250,17 +250,19 @@ export const MenuStep = ({
         </div>
 
         {menuData.days.map((day, index) => (
-          <div key={index} className="border-b border-gray-200 last:border-0">
+          <div key={index} className="border-b border-gray-200 last:border-0 print:border-b-2">
             <button
               onClick={() => onToggleDay(expandedDay === index ? null : index)}
-              className="w-full py-3 sm:py-4 flex justify-between items-center hover:bg-gray-50 transition-colors"
+              className="w-full py-3 sm:py-4 flex justify-between items-center hover:bg-gray-50 transition-colors print:hidden"
             >
               <span className="font-semibold text-gray-800 text-sm sm:text-base">{day.day}</span>
               {expandedDay === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
             
-            {(expandedDay === index || expandedDay === 'all') && (
-              <div className="pb-4 space-y-3 sm:space-y-4">
+            {/* Título do dia na impressão */}
+            <h3 className="hidden print:block font-bold text-base mb-2 pt-2">{day.day}</h3>
+            
+            <div className={`pb-4 space-y-3 sm:space-y-4 print:block ${(expandedDay === index || expandedDay === 'all') ? '' : 'hidden print:block'}`}>
                 {/* Café da Manhã */}
                 <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
                   <p className="font-medium text-yellow-900 mb-2 text-sm sm:text-base">☀️ Café da manhã</p>

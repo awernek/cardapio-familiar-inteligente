@@ -67,16 +67,27 @@
     color-adjust: exact !important;
   }
   
+  /* Configuração da página */
+  @page {
+    margin: 1cm;
+    size: A4;
+  }
+  
+  /* Reset geral */
   body {
-    font-size: 11pt;
-    line-height: 1.4;
+    font-size: 10pt;
+    line-height: 1.3;
     background: white !important;
     margin: 0;
     padding: 0;
+    color: #000 !important;
   }
   
   /* Esconder elementos não necessários */
-  .print\\:hidden {
+  .print\\:hidden,
+  header,
+  button:not(.print\\:block),
+  [class*="print:hidden"] {
     display: none !important;
   }
   
@@ -87,77 +98,179 @@
     padding: 0 !important;
   }
   
+  main,
   .max-w-4xl {
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 10px !important;
+    padding: 0 !important;
+    width: 100% !important;
   }
   
-  /* Cards - remover sombras, manter bordas */
+  /* Cards - remover sombras, manter bordas leves */
   .rounded-2xl, .rounded-xl, .rounded-lg {
-    border-radius: 8px !important;
+    border-radius: 4px !important;
     box-shadow: none !important;
-    border: 1px solid #e5e7eb !important;
+    border: 1px solid #d1d5db !important;
     page-break-inside: avoid;
+    margin-bottom: 12px !important;
   }
   
-  /* Gradientes - substituir por cores sólidas */
-  .bg-gradient-to-r {
-    background: #f3f4f6 !important;
+  /* Remover backgrounds coloridos, manter apenas bordas */
+  .bg-gradient-to-r,
+  .bg-green-50,
+  .bg-blue-50,
+  .bg-purple-50,
+  .bg-yellow-50,
+  .bg-orange-50,
+  .bg-pink-50,
+  .bg-amber-50,
+  .bg-indigo-50 {
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+  }
+  
+  /* Prioridades e insights - destacar com borda */
+  .from-amber-500,
+  .from-green-500,
+  .from-blue-500,
+  .from-purple-500 {
+    background: #f9fafb !important;
+    border-left: 3px solid #374151 !important;
     color: #1f2937 !important;
   }
   
-  .from-amber-500, .from-green-500, .from-blue-500 {
-    background: #f9fafb !important;
-    border-left: 4px solid #10b981 !important;
+  /* Texto branco em gradientes - converter para preto */
+  .text-white {
+    color: #1f2937 !important;
   }
   
-  /* Garantir que o texto das prioridades seja legível */
-  [class*="bg-white"][class*="10"] {
-    background: #f9fafb !important;
-    border: 1px solid #e5e7eb !important;
-  }
-  
-  /* Backdrop blur - remover na impressão */
+  /* Backdrop blur - remover */
   [class*="backdrop"] {
     backdrop-filter: none !important;
+    background: #f9fafb !important;
   }
   
-  /* Espaçamento reduzido */
-  .space-y-4, .space-y-6 {
+  /* Espaçamento otimizado */
+  .space-y-4,
+  .space-y-6,
+  .space-y-5 {
     gap: 8px !important;
   }
   
-  .p-4, .p-6, .sm\\:p-4, .sm\\:p-6 {
-    padding: 12px !important;
+  .p-4,
+  .p-6,
+  .p-5,
+  .sm\\:p-4,
+  .sm\\:p-6 {
+    padding: 10px !important;
   }
   
-  .mb-4, .mb-6 {
-    margin-bottom: 8px !important;
+  .mb-4,
+  .mb-6,
+  .mb-5 {
+    margin-bottom: 10px !important;
+  }
+  
+  .mt-4,
+  .mt-6 {
+    margin-top: 10px !important;
   }
   
   /* Títulos */
-  h2, h3 {
-    font-size: 14pt !important;
+  h1 {
+    font-size: 18pt !important;
+    font-weight: bold !important;
     margin-bottom: 8px !important;
-    color: #1f2937 !important;
+    color: #000 !important;
+    page-break-after: avoid;
   }
   
-  /* Grid de lista de compras */
-  .grid-cols-1, .sm\\:grid-cols-2 {
+  h2 {
+    font-size: 14pt !important;
+    font-weight: bold !important;
+    margin-bottom: 6px !important;
+    margin-top: 12px !important;
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+  
+  h3 {
+    font-size: 12pt !important;
+    font-weight: bold !important;
+    margin-bottom: 4px !important;
+    color: #000 !important;
+  }
+  
+  /* Texto geral */
+  p,
+  span,
+  li {
+    font-size: 9pt !important;
+    color: #000 !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Lista de compras - 2 colunas */
+  .grid-cols-1,
+  .sm\\:grid-cols-2,
+  [class*="grid"] {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
   
-  /* Quebra de página antes de lista de compras */
-  .bg-white:has(.text-blue-600) {
-    page-break-before: auto;
+  /* Cardápio por dia - sempre expandido na impressão */
+  [class*="border-b"] {
+    border-bottom: 1px solid #d1d5db !important;
+    page-break-inside: avoid;
   }
   
-  /* Botão de reset - esconder */
-  button.bg-green-600 {
+  /* Forçar expansão de todos os dias do cardápio na impressão */
+  .border-b > button {
     display: none !important;
+  }
+  
+  .border-b > div {
+    display: block !important;
+    opacity: 1 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  /* Mostrar conteúdo dos dias mesmo sem estar expandido */
+  .border-b > div[class*="pb-4"],
+  .border-b > div[class*="space-y"] {
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Garantir que refeições não quebrem */
+  .bg-yellow-50,
+  .bg-orange-50,
+  .bg-purple-50,
+  .bg-blue-50,
+  .bg-pink-50 {
+    page-break-inside: avoid;
+    margin-bottom: 8px !important;
+  }
+  
+  /* Lista de compras - quebra de página antes */
+  .bg-white:has(.text-blue-600),
+  .bg-white:has([class*="ShoppingCart"]) {
+    page-break-before: always;
+    margin-top: 20px !important;
+  }
+  
+  /* Esconder botões e elementos interativos */
+  button,
+  [role="button"],
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  /* Mostrar elementos de impressão */
+  .print\\:block {
+    display: block !important;
   }
   
   /* Cabeçalho de impressão */
@@ -166,12 +279,92 @@
     text-align: center;
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #10b981;
+    border-bottom: 2px solid #000;
+    page-break-after: avoid;
   }
   
-  /* Footer de impressão */
-  @page {
-    margin: 1.5cm;
-    size: A4;
+  /* Listas */
+  ul,
+  ol {
+    margin: 4px 0 !important;
+    padding-left: 20px !important;
+  }
+  
+  li {
+    margin-bottom: 2px !important;
+  }
+  
+  /* Ícones e emojis - manter visíveis */
+  [class*="lucide"],
+  svg {
+    display: inline-block !important;
+  }
+  
+  /* Evitar quebras ruins */
+  .bg-white {
+    page-break-inside: avoid;
+  }
+  
+  /* Espaçamento entre seções principais */
+  .space-y-4 > * + *,
+  .space-y-6 > * + * {
+    margin-top: 12px !important;
+  }
+  
+  /* Garantir que estimativa de custo seja visível */
+  .border-green-100 {
+    border: 1px solid #9ca3af !important;
+    background: #f9fafb !important;
+  }
+  
+  /* Gamificação - esconder na impressão */
+  [class*="gamification"],
+  [class*="Gamification"] {
+    display: none !important;
+  }
+  
+  /* Melhorar legibilidade das refeições */
+  .bg-yellow-50 p,
+  .bg-orange-50 p,
+  .bg-purple-50 p,
+  .bg-blue-50 p {
+    font-size: 9pt !important;
+    line-height: 1.5 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  /* Títulos das refeições */
+  .bg-yellow-50 p:first-child,
+  .bg-orange-50 p:first-child,
+  .bg-purple-50 p:first-child {
+    font-weight: bold !important;
+    font-size: 10pt !important;
+    margin-bottom: 6px !important;
+  }
+  
+  /* Lista de compras - melhor formatação */
+  ul[class*="space-y"] li {
+    font-size: 9pt !important;
+    padding: 2px 0 !important;
+  }
+  
+  /* Quebra de página inteligente - não quebrar refeições */
+  .bg-yellow-50,
+  .bg-orange-50,
+  .bg-purple-50 {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Espaçamento entre dias */
+  .border-b:not(:last-child) {
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+  }
+  
+  /* Garantir que o cabeçalho do cardápio apareça */
+  h2:has(+ div[class*="border-b"]) {
+    page-break-after: avoid;
+    margin-bottom: 12px !important;
   }
 }
