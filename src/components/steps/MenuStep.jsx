@@ -262,7 +262,7 @@ export const MenuStep = ({
             {/* Título do dia na impressão */}
             <h3 className="hidden print:block font-bold text-base mb-2 pt-2">{day.day}</h3>
             
-            <div className={`pb-4 space-y-3 sm:space-y-4 print:block ${(expandedDay === index || expandedDay === 'all') ? '' : 'hidden print:block'}`}>
+            <div className={`pb-4 space-y-3 sm:space-y-4 print:block ${(expandedDay === index || expandedDay === 'all') ? '' : 'hidden'}`}>
                 {/* Café da Manhã */}
                 <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
                   <p className="font-medium text-yellow-900 mb-2 text-sm sm:text-base">☀️ Café da manhã</p>
@@ -331,8 +331,7 @@ export const MenuStep = ({
                     <p className="text-gray-700 text-xs sm:text-sm">{day.dayTip}</p>
                   </div>
                 )}
-              </div>
-            )}
+            </div>
           </div>
         ))}
       </div>
