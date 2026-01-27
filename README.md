@@ -26,7 +26,11 @@ Planejamento alimentar semanal personalizado com IA para toda a família.
 | Vite | Build tool |
 | Tailwind CSS | Estilização |
 | Vitest | Testes unitários e integração |
-| Groq API (Llama 3.3) | Geração de cardápios |
+| Express | Backend (servidor local) |
+| Node.js | Runtime do servidor |
+| Nodemon | Auto-reload em desenvolvimento |
+| Groq API (Llama 3.3) | Geração de cardápios (padrão) |
+| Google Gemini / Anthropic Claude | Fallback para geração |
 | Supabase | Autenticação e banco de dados |
 | Vercel | Hospedagem (Serverless) |
 
@@ -113,8 +117,14 @@ PORT=3001
 ```bash
 cd server
 npm install
-npm run dev
+npm run dev  # Usa nodemon para auto-reload
 ```
+
+O servidor estará disponível em `http://localhost:3001` com:
+- Rate limiting: 20 requisições/hora por IP
+- Validação automática de entrada
+- Métricas disponíveis em `/api/metrics`
+- Health check em `/api/health`
 
 **Terminal 2 - Frontend:**
 ```bash
@@ -142,11 +152,19 @@ npm run test:coverage
 
 ### Cobertura de Testes
 
+**Frontend:**
 - ✅ **Utils**: `bmi.js`, `menuLogic.js`, `storage.js`, `logger.js`
 - ✅ **Hooks**: `useGamification`, `useHistory`, `useMenuGeneration`
 - ✅ **Integração**: Fluxos completos de criação de perfil e geração de cardápio
 
-Veja mais detalhes em `src/test/README.md`.
+**Backend:**
+- ✅ **Utils**: `rateLimiter`, `errorHandler`, `parseJsonResponse`, `envValidation` (~80% cobertura)
+- ✅ **Services**: `groqService`, `googleService`, `anthropicService`, `apiProvider` (~70% cobertura)
+- ✅ **Integração**: Endpoints completos, rate limiting, validação
+
+Veja mais detalhes:
+- Frontend: `src/test/README.md`
+- Backend: `server/test/README.md`
 
 ## ♿ Acessibilidade
 
@@ -162,47 +180,97 @@ O projeto segue as diretrizes WCAG e boas práticas de acessibilidade:
 
 ## 🔧 Melhorias Implementadas
 
-O projeto passou por 8 sprints de melhorias focadas em qualidade de código:
+O projeto passou por **16 sprints de melhorias** focadas em qualidade de código (8 no frontend + 8 no backend):
 
-### Sprint 1: Fundação e Logging
+### Frontend (8 Sprints)
+
+**Sprint 1: Fundação e Logging**
 - Sistema de logging condicional (dev/prod)
 - Centralização de constantes
 - Remoção de `console.log` espalhados
 
-### Sprint 2: Validação de Tipos
+**Sprint 2: Validação de Tipos**
 - PropTypes em todos os componentes
 - JSDoc em hooks e funções principais
 - Tipos centralizados em `src/types/`
 
-### Sprint 3: Refatoração de Componentes
+**Sprint 3: Refatoração de Componentes**
 - Componentes grandes divididos em menores
 - Extração de lógica para hooks customizados
 - Separação de responsabilidades
 
-### Sprint 4: Performance e Otimizações
+**Sprint 4: Performance e Otimizações**
 - `useMemo` e `useCallback` para evitar re-renders
 - `React.memo` em componentes filhos
 - Lazy loading com `React.lazy` e `Suspense`
 
-### Sprint 5: Segurança e Variáveis de Ambiente
+**Sprint 5: Segurança e Variáveis de Ambiente**
 - Validação de variáveis de ambiente
 - Remoção de chaves hardcoded
 - Documentação de variáveis obrigatórias/opcionais
 
-### Sprint 6: Tratamento de Erros
+**Sprint 6: Tratamento de Erros**
 - Error Boundary para capturar erros React
 - Tratamento centralizado de erros
 - Mensagens amigáveis ao usuário
 
-### Sprint 7: Testes Básicos
+**Sprint 7: Testes Básicos**
 - Configuração do Vitest
 - Testes unitários para utils e hooks
 - Testes de integração para fluxos principais
 
-### Sprint 8: Acessibilidade e UX
+**Sprint 8: Acessibilidade e UX**
 - ARIA labels e roles semânticos
 - Navegação por teclado completa
 - HTML semântico e melhorias de UX
+
+### Backend (8 Sprints)
+
+**Sprint 1: Fundação e Logging**
+- Sistema de logging condicional (`logger.js`)
+- Constantes centralizadas (`constants.js`)
+- Substituição de `console.log` por logger
+
+**Sprint 2: Modularização - Utils e Config**
+- Rate limiter modularizado com limpeza automática
+- Error handler centralizado
+- Parser de JSON unificado
+- Configuração CORS modularizada
+
+**Sprint 3: Modularização - Services**
+- Services isolados (Groq, Google, Anthropic)
+- Factory de providers (`apiProvider.js`)
+- Fallback automático entre modelos
+
+**Sprint 4: Validação e Segurança**
+- Validação de variáveis de ambiente no startup
+- Middleware de validação de requisições
+- Sanitização robusta de entrada
+
+**Sprint 5: Tratamento de Erros Avançado**
+- Classes de erro customizadas (`AppError`, `ApiError`, etc.)
+- Middleware global de tratamento de erros
+- Categorização e logging estruturado
+
+**Sprint 6: Documentação e JSDoc**
+- README.md completo do servidor
+- JSDoc em todas as funções principais
+- Documentação de módulos e serviços
+
+**Sprint 7: Testes Básicos**
+- Configuração Vitest
+- Testes unitários para utils (~80% cobertura)
+- Testes para services com mocks (~70% cobertura)
+- Testes de integração
+
+**Sprint 8: Melhorias de Rate Limiting**
+- Detecção melhorada de IP (suporte a proxies reversos)
+- Métricas detalhadas (endpoint `/api/metrics`)
+- Limpeza otimizada de registros expirados
+
+Veja mais detalhes:
+- Frontend: `PLANO_SPRINTS.md`
+- Backend: `server/PLANO_SPRINTS.md`
 
 ## 📁 Estrutura do Projeto
 
@@ -265,7 +333,36 @@ O projeto passou por 8 sprints de melhorias focadas em qualidade de código:
 │   ├── App.jsx                    # Componente principal
 │   └── main.jsx                   # Entry point
 ├── server/                        # Backend local (dev)
-│   └── index.js                   # Servidor Express
+│   ├── config/                    # Configurações
+│   │   ├── constants.js           # Constantes centralizadas
+│   │   └── cors.js                # Configuração CORS
+│   ├── middleware/                # Middlewares Express
+│   │   ├── errorHandler.js        # Tratamento global de erros
+│   │   └── validateRequest.js     # Validação de requisições
+│   ├── services/                   # Serviços de API
+│   │   ├── apiProvider.js          # Factory de providers
+│   │   ├── groqService.js          # Integração Groq
+│   │   ├── googleService.js        # Integração Google Gemini
+│   │   ├── anthropicService.js     # Integração Anthropic
+│   │   └── __tests__/              # Testes dos services
+│   ├── utils/                      # Utilitários
+│   │   ├── logger.js               # Sistema de logging
+│   │   ├── errorHandler.js         # Tratamento de erros
+│   │   ├── errors.js               # Classes de erro customizadas
+│   │   ├── envValidation.js        # Validação de env vars
+│   │   ├── parseJsonResponse.js    # Parsing de JSON
+│   │   ├── rateLimiter.js          # Rate limiting com métricas
+│   │   └── __tests__/              # Testes das utils
+│   ├── test/                       # Configuração de testes
+│   │   ├── setup.js                # Setup do Vitest
+│   │   └── README.md
+│   ├── __tests__/                  # Testes de integração
+│   ├── index.js                    # Entry point do servidor
+│   ├── nodemon.json                # Configuração nodemon
+│   ├── vitest.config.js            # Configuração Vitest
+│   ├── README.md                   # Documentação do servidor
+│   ├── PLANO_SPRINTS.md            # Plano das melhorias
+│   └── ANÁLISE_SERVIDOR.md         # Análise do servidor
 ├── supabase/                      # Migrations e schema
 │   ├── schema.sql
 │   ├── rls_update.sql
@@ -287,9 +384,16 @@ Analytics habilitado via Vercel Analytics no dashboard do projeto.
 
 ## 📚 Documentação Adicional
 
+**Frontend:**
 - **[ANÁLISE_PROJETO.md](./ANÁLISE_PROJETO.md)**: Análise detalhada da estrutura e qualidade do código
-- **[PLANO_SPRINTS.md](./PLANO_SPRINTS.md)**: Plano completo das 8 sprints de melhorias implementadas
-- **[src/test/README.md](./src/test/README.md)**: Guia completo sobre testes
+- **[PLANO_SPRINTS.md](./PLANO_SPRINTS.md)**: Plano completo das 8 sprints de melhorias do frontend
+- **[src/test/README.md](./src/test/README.md)**: Guia completo sobre testes do frontend
+
+**Backend:**
+- **[server/README.md](./server/README.md)**: Documentação completa do servidor
+- **[server/PLANO_SPRINTS.md](./server/PLANO_SPRINTS.md)**: Plano completo das 8 sprints de melhorias do backend
+- **[server/ANÁLISE_SERVIDOR.md](./server/ANÁLISE_SERVIDOR.md)**: Análise detalhada do servidor
+- **[server/test/README.md](./server/test/README.md)**: Guia completo sobre testes do backend
 
 ## 🤝 Contribuindo
 
