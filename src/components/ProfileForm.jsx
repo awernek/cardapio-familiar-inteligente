@@ -10,14 +10,22 @@ const SimpleInput = ({
   value, 
   onChange,
   type = 'text',
+  inputId,
+  required = false,
   ...props 
 }) => {
   const hasValue = value !== '' && value !== undefined && value !== null;
+  const id = inputId || `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const labelId = `${id}-label`;
   
   return (
     <div>
-      <label className="block text-sm text-gray-600 mb-1">{label}</label>
+      <label id={labelId} htmlFor={id} className="block text-sm text-gray-600 mb-1">
+        {label}
+        {required && <span className="text-red-500 ml-1" aria-label="obrigatório">*</span>}
+      </label>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={onChange}
@@ -25,6 +33,8 @@ const SimpleInput = ({
         className={`w-full px-3 py-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors
           ${hasValue ? 'border-green-300 bg-green-50/50' : 'border-gray-300'}
         `}
+        aria-labelledby={labelId}
+        aria-required={required}
         {...props}
       />
     </div>
@@ -98,10 +108,10 @@ export const ProfileForm = ({ profile, index, onUpdate, onRemove, onToggleAdvanc
         </div>
         <button 
           onClick={() => onRemove(profile.id)} 
-          className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
-          aria-label="Remover pessoa"
+          className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          aria-label={`Remover ${profile.name || `pessoa ${index + 1}`} da família`}
         >
-          <Trash2 size={18} />
+          <Trash2 size={18} aria-hidden="true" />
         </button>
       </div>
 

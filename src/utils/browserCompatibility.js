@@ -2,6 +2,8 @@
  * Utilitários para compatibilidade cross-browser
  */
 
+import { logger } from './logger';
+
 /**
  * Verifica se o navegador suporta Clipboard API
  */
@@ -18,7 +20,7 @@ export const copyToClipboard = async (text) => {
       await navigator.clipboard.writeText(text);
       return true;
     } catch (err) {
-      console.error('Erro ao copiar:', err);
+      logger.error('Erro ao copiar:', err);
       return fallbackCopyToClipboard(text);
     }
   } else {
@@ -45,7 +47,7 @@ const fallbackCopyToClipboard = (text) => {
     return successful;
   } catch (err) {
     document.body.removeChild(textArea);
-    console.error('Fallback copy failed:', err);
+    logger.error('Fallback copy failed:', err);
     return false;
   }
 };

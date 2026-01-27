@@ -1,4 +1,6 @@
+import PropTypes from 'prop-types';
 import { TrendingUp, TrendingDown, Minus, Calendar, User, Moon, Zap, Target, ChevronLeft, CheckCircle } from 'lucide-react';
+import { ProfileShape, IndividualAnswersShape, WeekHistoryItemShape } from '../../types';
 
 /**
  * Mapeia valores para scores numéricos para comparação
@@ -307,4 +309,11 @@ export const ProgressStep = ({
       </button>
     </div>
   );
+};
+
+ProgressStep.propTypes = {
+  profiles: PropTypes.arrayOf(ProfileShape).isRequired,
+  individualAnswers: IndividualAnswersShape.isRequired,
+  weekHistory: PropTypes.arrayOf(WeekHistoryItemShape).isRequired,
+  onBack: PropTypes.func.isRequired,
 };

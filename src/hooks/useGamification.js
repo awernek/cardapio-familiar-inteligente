@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getStorageItem, setStorageItem } from '../utils/storage';
+import { logger } from '../utils/logger';
 
 /**
  * Definição das conquistas disponíveis
@@ -81,6 +82,19 @@ const WEEKLY_MISSIONS = [
 
 /**
  * Hook para gerenciar gamificação
+ * 
+ * @returns {Object} Objeto com:
+ * @returns {Object} returns.stats - Estatísticas de gamificação
+ * @returns {boolean} returns.loading - Estado de carregamento
+ * @returns {Object|null} returns.newAchievement - Nova conquista desbloqueada
+ * @returns {Function} returns.dismissAchievement - Função para descartar notificação
+ * @returns {Function} returns.getMissions - Função que retorna array de missões
+ * @returns {Function} returns.getAchievements - Função que retorna array de conquistas
+ * @returns {Function} returns.getLevel - Função que retorna nível atual
+ * @returns {Function} returns.trackMenuGenerated - Função para rastrear cardápio gerado
+ * @returns {Function} returns.trackProfilesCount - Função para rastrear contagem de perfis
+ * @returns {Function} returns.trackDayFollowed - Função para rastrear dia seguido
+ * @returns {Function} returns.trackShoppingListUsed - Função para rastrear uso de lista
  */
 export const useGamification = () => {
   const [stats, setStats] = useState({
@@ -131,7 +145,7 @@ export const useGamification = () => {
         setStats(saved);
       }
     } catch (error) {
-      console.log('Erro ao carregar stats de gamificação:', error);
+      logger.log('Erro ao carregar stats de gamificação:', error);
     } finally {
       setLoading(false);
     }
@@ -142,7 +156,7 @@ export const useGamification = () => {
       await setStorageItem('gamification-stats', newStats);
       setStats(newStats);
     } catch (error) {
-      console.error('Erro ao salvar stats:', error);
+      logger.error('Erro ao salvar stats:', error);
     }
   };
 

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
+import { logger } from '../utils/logger';
 
 const AuthContext = createContext({});
 
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
           setHasAcceptedTerms(acceptedTerms === 'true');
         }
       } catch (error) {
-        console.error('Erro ao verificar sessão:', error);
+        logger.error('Erro ao verificar sessão:', error);
       } finally {
         setLoading(false);
       }

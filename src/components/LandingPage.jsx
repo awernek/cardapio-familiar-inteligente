@@ -35,11 +35,17 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
     
     try {
       // Usando Web3Forms (gratuito) - funciona sem backend
+      const web3formsKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+      
+      if (!web3formsKey) {
+        throw new Error('Web3Forms access key não configurada');
+      }
+      
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: 'c818a0b7-514a-4bc6-b144-2d6e193f0f49',
+          access_key: web3formsKey,
           from_name: contactForm.name,
           email: contactForm.email,
           message: contactForm.message,
@@ -164,16 +170,18 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={onStartTrial}
-              className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all hover:scale-105 shadow-lg shadow-green-200"
+              className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all hover:scale-105 shadow-lg shadow-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              aria-label="Começar a usar o aplicativo gratuitamente"
             >
               Montar Meu Cardápio Grátis
-              <ArrowRight size={20} />
+              <ArrowRight size={20} aria-hidden="true" />
             </button>
             <button
               onClick={() => setShowDemo(true)}
-              className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              aria-label="Ver demonstração de como o aplicativo funciona"
             >
-              <Play size={20} />
+              <Play size={20} aria-hidden="true" />
               Ver como funciona
             </button>
           </div>
@@ -392,10 +400,10 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
       {/* Floating Contact Button */}
       <button
         onClick={() => setShowContact(true)}
-        className="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 z-40"
-        aria-label="Fale conosco"
+        className="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 z-40 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        aria-label="Fale conosco - Abrir formulário de contato"
       >
-        <MessageCircle size={24} />
+        <MessageCircle size={24} aria-hidden="true" />
       </button>
 
       {/* Demo Modal */}

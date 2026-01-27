@@ -1,40 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Header } from './components/Header';
-import { ProfilesStep } from './components/steps/ProfilesStep';
-import { QuestionnaireStep } from './components/steps/QuestionnaireStep';
-import { WeeklyContextStep } from './components/steps/WeeklyContextStep';
-import { ReportStep } from './components/steps/ReportStep';
-import { MenuStep } from './components/steps/MenuStep';
-import { ProgressStep } from './components/steps/ProgressStep';
 import { AuthForm } from './components/auth/AuthForm';
 import { ConsentScreen } from './components/auth/ConsentScreen';
 import { LandingPage } from './components/LandingPage';
+import { AppRouter } from './components/AppRouter';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useHistory } from './hooks/useHistory';
 import { useAuth } from './contexts/AuthContext';
 import { useGamification } from './hooks/useGamification';
+import { useAppNavigation } from './hooks/useAppNavigation';
+import { useAppInitialization } from './hooks/useAppInitialization';
+import { useProfiles } from './hooks/useProfiles';
 import { AchievementToast } from './components/gamification/AchievementToast';
-import { GamificationCard } from './components/gamification/GamificationCard';
 import { generateWeeklyPriorities, generateInsights, compareWithLastWeek } from './utils/menuLogic';
-import { getOrCreateFamily, saveMenu, getMenuHistory } from './services/menuService';
-import { isSupabaseAvailable } from './lib/supabase';
+import { saveMenu } from './services/menuService';
+import { logger } from './utils/logger';
+import { errorHandler } from './utils/errorHandler';
+import { STEPS } from './constants';
 
 function App() {
   const { user, loading: authLoading, hasAcceptedTerms, isAuthenticated, isGuest, startGuestMode, exitGuestMode } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   
-  const [step, setStep] = useState('profiles');
-  const [profiles, setProfiles] = useState([]);
+  // Hooks customizados - TODOS devem estar no topo, antes de qualquer return condicional
+  const navigation = useAppNavigation();
+  const { profiles, addProfile, updateProfile, removeProfile, toggleAdvanced, resetProfiles } = useProfiles();
   const [familyLocation, setFamilyLocation] = useState({ state: '', city: '' });
-  const [currentQuestionnaireIndex, setCurrentQuestionnaireIndex] = useState(0);
   const [individualAnswers, setIndividualAnswers] = useState({});
   const [weeklyContext, setWeeklyContext] = useState({});
   const [menuData, setMenuData] = useState(null);
   const [expandedDay, setExpandedDay] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
-  const [familyId, setFamilyId] = useState(null);
-  const [menuHistory, setMenuHistory] = useState([]);
   
   const { weekHistory, saveWeekToHistory } = useHistory();
+  const { familyId, menuHistory, setMenuHistory } = useAppInitialization(
+    isAuthenticated,
+    hasAcceptedTerms,
+    isGuest,
+    user?.id
+  );
+  
   const { 
     newAchievement, 
     dismissAchievement, 
@@ -46,29 +51,135 @@ function App() {
     trackShoppingListUsed
   } = useGamification();
 
-  // Inicializar família ao carregar (após autenticação e aceite de termos)
-  useEffect(() => {
-    const initFamily = async () => {
-      // Só inicializa família para usuários autenticados (não guest)
-      if (!isAuthenticated || !hasAcceptedTerms || isGuest) return;
-      
+  // Cálculos pesados memoizados - devem estar antes dos returns condicionais
+  const priorities = useMemo(() => {
+    if (!profiles.length || !Object.keys(individualAnswers).length || !Object.keys(weeklyContext).length) {
+      return [];
+    }
+    return generateWeeklyPriorities(profiles, individualAnswers, weeklyContext);
+  }, [profiles, individualAnswers, weeklyContext]);
+
+  const insights = useMemo(() => {
+    if (!profiles.length || !Object.keys(individualAnswers).length) {
+      return [];
+    }
+    return generateInsights(profiles, individualAnswers);
+  }, [profiles, individualAnswers]);
+
+  // Comparar com semana anterior (memoizado)
+  const lastWeekComparison = useMemo(() => {
+    if (weekHistory.length === 0) return null;
+    return compareWithLastWeek(profiles, individualAnswers, weekHistory[0]);
+  }, [profiles, individualAnswers, weekHistory]);
+
+  // Dados de gamificação (memoizado)
+  const gamificationData = useMemo(() => ({
+    missions: getMissions(),
+    achievements: getAchievements(),
+    level: getLevel()
+  }), [getMissions, getAchievements, getLevel]);
+
+  // Salvar respostas individuais (memoizado)
+  const saveIndividualAnswers = useCallback((profileId, answers) => {
+    setIndividualAnswers(prev => ({
+      ...prev,
+      [profileId]: answers
+    }));
+  }, []);
+
+  // Handlers de navegação (memoizados)
+  const nextQuestionnaire = useCallback(() => {
+    if (navigation.currentQuestionnaireIndex < profiles.length - 1) {
+      navigation.setCurrentQuestionnaireIndex(navigation.currentQuestionnaireIndex + 1);
+    } else {
+      navigation.navigateToStep(STEPS.WEEKLY_CONTEXT);
+    }
+  }, [navigation, profiles.length]);
+
+  const prevQuestionnaire = useCallback(() => {
+    if (navigation.currentQuestionnaireIndex > 0) {
+      navigation.setCurrentQuestionnaireIndex(navigation.currentQuestionnaireIndex - 1);
+    } else {
+      navigation.navigateToStep(STEPS.PROFILES);
+    }
+  }, [navigation]);
+
+  // Gerar cardápio (memoizado)
+  const handleGenerateMenu = useCallback(async (menuData) => {
+    // Salva semana no histórico antes de gerar cardápio
+    await saveWeekToHistory(
+      profiles,
+      individualAnswers,
+      weeklyContext,
+      () => priorities,
+      () => insights
+    );
+    
+    // Salvar cardápio no Supabase
+    if (familyId) {
       try {
-        const family = await getOrCreateFamily('Minha Família', user?.id);
-        setFamilyId(family.id);
-        console.log('👨‍👩‍👧‍👦 Família inicializada:', family.id);
+        const savedMenu = await saveMenu(familyId, menuData, weeklyContext, profiles);
+        logger.log('💾 Cardápio salvo:', savedMenu.id);
         
-        // Carregar histórico de cardápios
-        if (isSupabaseAvailable()) {
-          const history = await getMenuHistory(family.id);
-          setMenuHistory(history);
-          console.log('📚 Histórico carregado:', history.length, 'cardápios');
-        }
+        // Atualizar histórico local
+        setMenuHistory(prev => [savedMenu, ...prev]);
       } catch (error) {
-        console.error('Erro ao inicializar família:', error);
+        errorHandler.handleError(error, {
+          context: 'App',
+          operation: 'saveMenu',
+        });
+        // Continua mesmo se falhar o salvamento
       }
-    };
-    initFamily();
-  }, [isAuthenticated, hasAcceptedTerms, isGuest, user?.id]);
+    }
+    
+    // Tracking de gamificação
+    await trackMenuGenerated();
+    await trackProfilesCount(profiles.length);
+    
+    setMenuData(menuData);
+    navigation.navigateToStep(STEPS.MENU);
+  }, [profiles, individualAnswers, weeklyContext, familyId, priorities, insights, saveWeekToHistory, setMenuHistory, trackMenuGenerated, trackProfilesCount, navigation]);
+
+  // Resetar tudo (memoizado)
+  const resetApp = useCallback(() => {
+    navigation.resetNavigation();
+    resetProfiles();
+    setMenuData(null);
+    setIndividualAnswers({});
+    setWeeklyContext({});
+    setExpandedDay(null);
+  }, [navigation, resetProfiles]);
+
+  // Handlers inline memoizados - devem estar no topo também
+  const handleUpdateLocation = useCallback(setFamilyLocation, []);
+  const handleUpdateContext = useCallback(setWeeklyContext, []);
+  const handleToggleDay = useCallback(setExpandedDay, []);
+  const handleToggleHistory = useCallback(() => setShowHistory(prev => !prev), []);
+  
+  // Função para ir do ProfilesStep para QuestionnaireStep (sempre começa no índice 0)
+  const handleContinueFromProfiles = useCallback(() => {
+    // Define o índice como 0 e navega para QUESTIONNAIRE
+    navigation.setCurrentQuestionnaireIndex(0);
+    navigation.navigateToStep(STEPS.QUESTIONNAIRE);
+  }, [navigation]);
+  
+  const handleViewReport = useCallback(() => navigation.navigateToStep(STEPS.REPORT), [navigation]);
+  
+  const handleBackFromWeeklyContext = useCallback(() => {
+    navigation.navigateToStep(STEPS.QUESTIONNAIRE);
+    navigation.setCurrentQuestionnaireIndex(profiles.length - 1);
+  }, [navigation, profiles.length]);
+  
+  const handleViewProgress = useCallback(() => navigation.navigateToStep(STEPS.PROGRESS), [navigation]);
+  
+  const handleBackFromReport = useCallback(() => navigation.navigateToStep(STEPS.WEEKLY_CONTEXT), [navigation]);
+  
+  const handleContinueFromReport = useCallback(() => {
+    navigation.navigateToStep(STEPS.WEEKLY_CONTEXT);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [navigation]);
+  
+  const handleBackFromProgress = useCallback(() => navigation.navigateToStep(STEPS.MENU), [navigation]);
 
   // Loading screen
   if (authLoading) {
@@ -112,227 +223,56 @@ function App() {
     return <ConsentScreen />;
   }
 
-  // Adicionar perfil
-  const addProfile = () => {
-    setProfiles([...profiles, {
-      id: Date.now(),
-      name: '',
-      age: '',
-      sex: '',
-      weight: '',
-      height: '',
-      bodyType: '',
-      restrictions: '',
-      goals: '',
-      showAdvanced: false,
-      healthConditions: '',
-      medications: '',
-      activityLevel: '',
-      mealTimes: '',
-      cookingSkill: '',
-      routine: ''
-    }]);
-  };
-
-  // Atualizar perfil
-  const updateProfile = (id, field, value) => {
-    setProfiles(profiles.map(p => 
-      p.id === id ? { ...p, [field]: value } : p
-    ));
-  };
-
-  // Remover perfil
-  const removeProfile = (id) => {
-    setProfiles(profiles.filter(p => p.id !== id));
-  };
-
-  // Toggle detalhes avançados
-  const toggleAdvanced = (id) => {
-    setProfiles(profiles.map(p => 
-      p.id === id ? { ...p, showAdvanced: !p.showAdvanced } : p
-    ));
-  };
-
-  // Salvar respostas individuais
-  const saveIndividualAnswers = (profileId, answers) => {
-    setIndividualAnswers(prev => ({
-      ...prev,
-      [profileId]: answers
-    }));
-  };
-
-  // Avançar para próxima pessoa
-  const nextQuestionnaire = () => {
-    if (currentQuestionnaireIndex < profiles.length - 1) {
-      setCurrentQuestionnaireIndex(currentQuestionnaireIndex + 1);
-    } else {
-      setStep('weekly-context');
-    }
-  };
-
-  // Voltar para pessoa anterior
-  const prevQuestionnaire = () => {
-    if (currentQuestionnaireIndex > 0) {
-      setCurrentQuestionnaireIndex(currentQuestionnaireIndex - 1);
-    } else {
-      setStep('profiles');
-    }
-  };
-
-  // Gerar cardápio
-  const handleGenerateMenu = async (menuData) => {
-    // Salva semana no histórico antes de gerar cardápio
-    await saveWeekToHistory(
-      profiles,
-      individualAnswers,
-      weeklyContext,
-      () => generateWeeklyPriorities(profiles, individualAnswers, weeklyContext),
-      () => generateInsights(profiles, individualAnswers)
-    );
-    
-    // Salvar cardápio no Supabase
-    if (familyId) {
-      try {
-        const savedMenu = await saveMenu(familyId, menuData, weeklyContext, profiles);
-        console.log('💾 Cardápio salvo:', savedMenu.id);
-        
-        // Atualizar histórico local
-        setMenuHistory(prev => [savedMenu, ...prev]);
-      } catch (error) {
-        console.error('Erro ao salvar cardápio:', error);
-        // Continua mesmo se falhar o salvamento
-      }
-    }
-    
-    // Tracking de gamificação
-    await trackMenuGenerated();
-    await trackProfilesCount(profiles.length);
-    
-    setMenuData(menuData);
-    setStep('menu');
-  };
-
-  // Comparar com semana anterior
-  const lastWeekComparison = weekHistory.length > 0 
-    ? compareWithLastWeek(profiles, individualAnswers, weekHistory[0])
-    : null;
-
-  // Resetar tudo
-  const resetApp = () => {
-    setStep('profiles');
-    setMenuData(null);
-    setCurrentQuestionnaireIndex(0);
-    setIndividualAnswers({});
-    setWeeklyContext({});
-    setExpandedDay(null);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-3 sm:p-4">
-      {/* Toast de nova conquista */}
-      <AchievementToast 
-        achievement={newAchievement} 
-        onDismiss={dismissAchievement} 
-      />
-      
-      <main className="max-w-4xl mx-auto" role="main">
-        <Header step={step} onCreateAccount={() => { exitGuestMode(); setShowLogin(true); }} />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-3 sm:p-4">
+        {/* Toast de nova conquista */}
+        <AchievementToast 
+          achievement={newAchievement} 
+          onDismiss={dismissAchievement} 
+        />
+        
+        <main id="main-content" className="max-w-4xl mx-auto" role="main" tabIndex="-1">
+          <Header step={navigation.step} onCreateAccount={() => { exitGuestMode(); setShowLogin(true); }} />
 
-        {/* Step: Perfis */}
-        {step === 'profiles' && (
-          <ProfilesStep
-            profiles={profiles}
-            familyLocation={familyLocation}
-            onUpdateLocation={setFamilyLocation}
-            onAddProfile={addProfile}
-            onUpdateProfile={updateProfile}
-            onRemoveProfile={removeProfile}
-            onToggleAdvanced={toggleAdvanced}
-            onContinue={() => {
-              setStep('questionnaire');
-              setCurrentQuestionnaireIndex(0);
-            }}
-          />
-        )}
-
-        {/* Step: Questionário Individual */}
-        {step === 'questionnaire' && (
-          <QuestionnaireStep
-            profiles={profiles}
-            currentIndex={currentQuestionnaireIndex}
-            individualAnswers={individualAnswers}
-            onSaveAnswers={saveIndividualAnswers}
-            onNext={nextQuestionnaire}
-            onPrev={prevQuestionnaire}
-          />
-        )}
-
-        {/* Step: Contexto Semanal */}
-        {step === 'weekly-context' && (
-          <WeeklyContextStep
-            profiles={profiles}
-            individualAnswers={individualAnswers}
-            weeklyContext={weeklyContext}
-            familyLocation={familyLocation}
-            onUpdateContext={setWeeklyContext}
-            onGenerateMenu={handleGenerateMenu}
-            onBack={() => {
-              setStep('questionnaire');
-              setCurrentQuestionnaireIndex(profiles.length - 1);
-            }}
-            onViewReport={() => setStep('report')}
-          />
-        )}
-
-        {/* Step: Relatório */}
-        {step === 'report' && (
-          <ReportStep
-            profiles={profiles}
-            individualAnswers={individualAnswers}
-            weeklyContext={weeklyContext}
-            weekHistory={weekHistory}
-            showHistory={showHistory}
-            onToggleHistory={() => setShowHistory(!showHistory)}
-            onBack={() => setStep('weekly-context')}
-            onContinue={() => {
-              setStep('weekly-context');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
-        {/* Step: Cardápio */}
-        {step === 'menu' && menuData && (
-          <MenuStep
-            menuData={menuData}
-            profiles={profiles}
-            individualAnswers={individualAnswers}
-            weeklyContext={weeklyContext}
-            lastWeekComparison={lastWeekComparison}
-            expandedDay={expandedDay}
-            onToggleDay={setExpandedDay}
-            onReset={resetApp}
-            onViewProgress={() => setStep('progress')}
-            onShoppingListUsed={trackShoppingListUsed}
-            gamification={{
-              missions: getMissions(),
-              achievements: getAchievements(),
-              level: getLevel()
-            }}
-          />
-        )}
-
-        {/* Step: Progresso */}
-        {step === 'progress' && (
-          <ProgressStep
-            profiles={profiles}
-            individualAnswers={individualAnswers}
-            weekHistory={weekHistory}
-            onBack={() => setStep('menu')}
-          />
-        )}
-      </main>
-    </div>
+          <AppRouter
+          step={navigation.step}
+          profiles={profiles}
+          familyLocation={familyLocation}
+          currentQuestionnaireIndex={navigation.currentQuestionnaireIndex}
+          individualAnswers={individualAnswers}
+          weeklyContext={weeklyContext}
+          menuData={menuData}
+          expandedDay={expandedDay}
+          showHistory={showHistory}
+          weekHistory={weekHistory}
+          lastWeekComparison={lastWeekComparison}
+          gamification={gamificationData}
+          onUpdateLocation={handleUpdateLocation}
+          onAddProfile={addProfile}
+          onUpdateProfile={updateProfile}
+          onRemoveProfile={removeProfile}
+          onToggleAdvanced={toggleAdvanced}
+          onContinueFromProfiles={handleContinueFromProfiles}
+          onNextQuestionnaire={nextQuestionnaire}
+          onSaveAnswers={saveIndividualAnswers}
+          onPrevQuestionnaire={prevQuestionnaire}
+          onUpdateContext={handleUpdateContext}
+          onGenerateMenu={handleGenerateMenu}
+          onViewReport={handleViewReport}
+          onBackFromWeeklyContext={handleBackFromWeeklyContext}
+          onToggleDay={handleToggleDay}
+          onReset={resetApp}
+          onViewProgress={handleViewProgress}
+          onShoppingListUsed={trackShoppingListUsed}
+          onToggleHistory={handleToggleHistory}
+          onBackFromReport={handleBackFromReport}
+          onContinueFromReport={handleContinueFromReport}
+          onBackFromProgress={handleBackFromProgress}
+        />
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 }
 

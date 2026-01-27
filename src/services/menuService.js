@@ -1,5 +1,6 @@
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
 import { getStorageItem, setStorageItem, listStorageKeys } from '../utils/storage';
+import { logger } from '../utils/logger';
 
 /**
  * Serviço para gerenciar cardápios e histórico
@@ -45,7 +46,7 @@ export const getOrCreateFamily = async (familyName = 'Minha Família', userId = 
       .single();
 
     if (error) {
-      console.error('Erro ao criar família:', error);
+      logger.error('Erro ao criar família:', error);
       throw error;
     }
 
@@ -76,7 +77,7 @@ export const getOrCreateFamily = async (familyName = 'Minha Família', userId = 
     .single();
 
   if (error) {
-    console.error('Erro ao criar família:', error);
+    logger.error('Erro ao criar família:', error);
     throw error;
   }
 
@@ -123,7 +124,7 @@ export const saveMenu = async (familyId, menuData, weeklyContext, profiles) => {
     .single();
 
   if (error) {
-    console.error('Erro ao salvar cardápio:', error);
+    logger.error('Erro ao salvar cardápio:', error);
     throw error;
   }
 
@@ -156,7 +157,7 @@ export const getMenuHistory = async (familyId, limit = 10) => {
     .limit(limit);
 
   if (error) {
-    console.error('Erro ao buscar histórico:', error);
+    logger.error('Erro ao buscar histórico:', error);
     return [];
   }
 
@@ -179,7 +180,7 @@ export const getMenu = async (menuId) => {
     .single();
 
   if (error) {
-    console.error('Erro ao buscar cardápio:', error);
+    logger.error('Erro ao buscar cardápio:', error);
     return null;
   }
 
@@ -231,7 +232,7 @@ export const saveProfiles = async (familyId, profiles) => {
     .select();
 
   if (error) {
-    console.error('Erro ao salvar perfis:', error);
+    logger.error('Erro ao salvar perfis:', error);
     throw error;
   }
 
@@ -252,7 +253,7 @@ export const getProfiles = async (familyId) => {
     .eq('family_id', familyId);
 
   if (error) {
-    console.error('Erro ao buscar perfis:', error);
+    logger.error('Erro ao buscar perfis:', error);
     return [];
   }
 

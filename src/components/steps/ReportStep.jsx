@@ -1,8 +1,10 @@
+import PropTypes from 'prop-types';
 import { Calendar, ShoppingCart } from 'lucide-react';
 import { generateReportText } from '../../utils/reportGenerator';
 import { generateWeeklyPriorities, generateInsights, compareWithLastWeek } from '../../utils/menuLogic';
 import { calculateBMI, getBMICategory } from '../../utils/bmi';
 import { copyToClipboard } from '../../utils/browserCompatibility';
+import { ProfileShape, IndividualAnswersShape, WeeklyContextShape, WeekHistoryItemShape } from '../../types';
 
 /**
  * Componente da etapa de relatório
@@ -224,4 +226,15 @@ export const ReportStep = ({
       </div>
     </div>
   );
+};
+
+ReportStep.propTypes = {
+  profiles: PropTypes.arrayOf(ProfileShape).isRequired,
+  individualAnswers: IndividualAnswersShape.isRequired,
+  weeklyContext: WeeklyContextShape.isRequired,
+  weekHistory: PropTypes.arrayOf(WeekHistoryItemShape).isRequired,
+  showHistory: PropTypes.bool.isRequired,
+  onToggleHistory: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+  onContinue: PropTypes.func.isRequired,
 };

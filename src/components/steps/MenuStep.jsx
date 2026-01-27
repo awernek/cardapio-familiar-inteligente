@@ -1,5 +1,12 @@
-import { Calendar, ShoppingCart, ChevronDown, ChevronUp, Printer, Share2, Wallet, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react';
+import { useMemo } from 'react';
+import PropTypes from 'prop-types';
+import { Calendar } from 'lucide-react';
 import { generateWeeklyPriorities, generateInsights } from '../../utils/menuLogic';
+import { MenuDataShape, ProfileShape, IndividualAnswersShape, WeeklyContextShape, LastWeekComparisonShape, GamificationShape } from '../../types';
+import { MenuActions } from './MenuStep/MenuActions';
+import { CostEstimate } from './MenuStep/CostEstimate';
+import { DayCard } from './MenuStep/DayCard';
+import { ShoppingList } from './MenuStep/ShoppingList';
 
 /**
  * Formata o cardápio para texto (WhatsApp/compartilhar)
@@ -80,8 +87,21 @@ export const MenuStep = ({
   onShoppingListUsed,
   gamification
 }) => {
-  const priorities = generateWeeklyPriorities(profiles, individualAnswers, weeklyContext);
-  const insights = generateInsights(profiles, individualAnswers);
+  // Memoizar cálculos pesados
+  const priorities = useMemo(() => 
+    generateWeeklyPriorities(profiles, individualAnswers, weeklyContext),
+    [profiles, individualAnswers, weeklyContext]
+  );
+  
+  const insights = useMemo(() => 
+    generateInsights(profiles, individualAnswers),
+    [profiles, individualAnswers]
+  );
+  
+  const familyNames = useMemo(() => 
+    profiles.map(p => p.name).join(', '),
+    [profiles]
+  );
   
   // Verifica se todos os dias estão expandidos
   const allExpanded = expandedDay === 'all';
@@ -90,8 +110,6 @@ export const MenuStep = ({
   const toggleExpandAll = () => {
     onToggleDay(allExpanded ? null : 'all');
   };
-
-  const familyNames = profiles.map(p => p.name).join(', ');
   const currentDate = new Date().toLocaleDateString('pt-BR', { 
     weekday: 'long', 
     year: 'numeric', 
@@ -109,261 +127,98 @@ export const MenuStep = ({
       </div>
 
       {/* Botões de Ação - esconde na impressão */}
-      <div className="flex flex-wrap gap-2 sm:gap-3 print:hidden">
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
-        >
-          <Printer size={18} />
-          Imprimir / PDF
-        </button>
-        <button
-          onClick={() => shareViaWhatsApp(menuData, profiles)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors text-sm"
-        >
-          <Share2 size={18} />
-          WhatsApp
-        </button>
-        <button
-          onClick={toggleExpandAll}
-          className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors text-sm"
-        >
-          <ChevronDown size={18} />
-          {allExpanded ? 'Recolher Dias' : 'Expandir Todos'}
-        </button>
-        {onViewProgress && (
-          <button
-            onClick={onViewProgress}
-            className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-600 transition-colors text-sm"
-          >
-            <TrendingUp size={18} />
-            Ver Progresso
-          </button>
-        )}
-      </div>
+      <MenuActions
+        onPrint={handlePrint}
+        onShare={() => shareViaWhatsApp(menuData, profiles)}
+        onToggleExpandAll={toggleExpandAll}
+        allExpanded={allExpanded}
+        onViewProgress={onViewProgress}
+      />
       {/* Prioridades da Semana */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl shadow-lg p-4 sm:p-6">
-        <h3 className="font-bold text-xl sm:text-2xl mb-3">🔮 Prioridades Nutricionais da Semana</h3>
-        <div className="space-y-2">
+      <section className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="priorities-heading">
+        <h3 id="priorities-heading" className="font-bold text-xl sm:text-2xl mb-3">🔮 Prioridades Nutricionais da Semana</h3>
+        <ol className="space-y-2" role="list">
           {priorities.map((priority, index) => (
-            <div key={index} className="flex items-start gap-3 bg-white/10 backdrop-blur rounded-lg p-3">
-              <span className="font-bold text-lg sm:text-xl">{index + 1}.</span>
+            <li key={index} className="flex items-start gap-3 bg-white/10 backdrop-blur rounded-lg p-3">
+              <span className="font-bold text-lg sm:text-xl" aria-hidden="true">{index + 1}.</span>
               <p className="text-base sm:text-lg">{priority}</p>
-            </div>
+            </li>
           ))}
-        </div>
-      </div>
+        </ol>
+      </section>
 
       {/* Comparação com semana anterior */}
       {lastWeekComparison && (
-        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl shadow-lg p-4 sm:p-6">
-          <h3 className="font-bold text-lg sm:text-xl mb-3">📊 Evolução vs Semana Anterior</h3>
-          <div className="space-y-3">
+        <section className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="comparison-heading">
+          <h3 id="comparison-heading" className="font-bold text-lg sm:text-xl mb-3">📊 Evolução vs Semana Anterior</h3>
+          <div className="space-y-3" role="list">
             {lastWeekComparison.map((comp, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur rounded-lg p-3">
-                <p className="font-semibold mb-1 text-sm sm:text-base">{comp.name}</p>
-                <ul className="space-y-1 text-xs sm:text-sm">
+              <article key={index} className="bg-white/10 backdrop-blur rounded-lg p-3" role="listitem">
+                <h4 className="font-semibold mb-1 text-sm sm:text-base">{comp.name}</h4>
+                <ul className="space-y-1 text-xs sm:text-sm" role="list">
                   {comp.changes.map((change, i) => (
                     <li key={i}>• {change}</li>
                   ))}
                 </ul>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Dicas da Semana */}
-      <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-2xl shadow-lg p-4 sm:p-6">
-        <h3 className="font-bold text-lg sm:text-xl mb-2">💡 Dicas para esta semana</h3>
+      <section className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="weekly-tips-heading">
+        <h3 id="weekly-tips-heading" className="font-bold text-lg sm:text-xl mb-2">💡 Dicas para esta semana</h3>
         <p className="text-sm sm:text-base">{menuData.weeklyTips}</p>
-      </div>
+      </section>
 
       {/* Estimativa de Custo */}
-      {menuData.costEstimate && (
-        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-2 border-green-100">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <Wallet className="text-green-600" size={20} />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg text-gray-800">Estimativa de Custo Semanal</h3>
-              <p className="text-xs text-gray-500">Valores aproximados para sua região</p>
-            </div>
-          </div>
-
-          {/* Valor estimado */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 mb-4">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-3xl sm:text-4xl font-bold text-green-700">
-                R$ {menuData.costEstimate.min}
-              </span>
-              <span className="text-gray-400 text-xl">–</span>
-              <span className="text-3xl sm:text-4xl font-bold text-green-700">
-                R$ {menuData.costEstimate.max}
-              </span>
-            </div>
-            <p className="text-center text-sm text-gray-600 mt-2">
-              para {profiles.length} {profiles.length === 1 ? 'pessoa' : 'pessoas'} • 7 dias
-            </p>
-          </div>
-
-          {/* Dica de economia */}
-          {menuData.costEstimate.tips && (
-            <div className="flex items-start gap-3 bg-amber-50 rounded-lg p-3 mb-3">
-              <TrendingDown className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
-              <div>
-                <p className="text-sm font-medium text-amber-800">Dica para economizar</p>
-                <p className="text-xs text-amber-700">{menuData.costEstimate.tips}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Disclaimer */}
-          <div className="flex items-start gap-2 text-xs text-gray-500">
-            <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-            <p>{menuData.costEstimate.disclaimer || 'Valores estimados. Preços podem variar conforme estabelecimento e região.'}</p>
-          </div>
-        </div>
-      )}
+      <CostEstimate 
+        costEstimate={menuData.costEstimate} 
+        profilesCount={profiles.length}
+      />
 
       {/* Observações Individuais */}
       {menuData.individualNotes && Object.keys(menuData.individualNotes).length > 0 && (
-        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-          <h3 className="font-bold text-base sm:text-lg mb-4 text-gray-800">👤 Observações Individuais</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <section className="bg-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="individual-notes-heading">
+          <h3 id="individual-notes-heading" className="font-bold text-base sm:text-lg mb-4 text-gray-800">👤 Observações Individuais</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4" role="list">
             {Object.entries(menuData.individualNotes).map(([name, note]) => (
-              <div key={name} className="bg-purple-50 p-3 sm:p-4 rounded-lg">
-                <p className="font-semibold text-purple-900 mb-1 text-sm sm:text-base">{name}</p>
+              <article key={name} className="bg-purple-50 p-3 sm:p-4 rounded-lg" role="listitem">
+                <h4 className="font-semibold text-purple-900 mb-1 text-sm sm:text-base">{name}</h4>
                 <p className="text-xs sm:text-sm text-gray-700">{note}</p>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Cardápio por Dia */}
-      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+      <section className="bg-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="menu-heading">
         <div className="flex items-center gap-2 mb-4 sm:mb-6">
-          <Calendar className="text-blue-600 flex-shrink-0" size={24} />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Cardápio Semanal</h2>
+          <Calendar className="text-blue-600 flex-shrink-0" size={24} aria-hidden="true" />
+          <h2 id="menu-heading" className="text-xl sm:text-2xl font-bold text-gray-800">Cardápio Semanal</h2>
         </div>
 
-        {menuData.days.map((day, index) => (
-          <div key={index} className="border-b border-gray-200 last:border-0 print:border-b-2">
-            <button
-              onClick={() => onToggleDay(expandedDay === index ? null : index)}
-              className="w-full py-3 sm:py-4 flex justify-between items-center hover:bg-gray-50 transition-colors print:hidden"
-            >
-              <span className="font-semibold text-gray-800 text-sm sm:text-base">{day.day}</span>
-              {expandedDay === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
-            
-            {/* Título do dia na impressão */}
-            <h3 className="hidden print:block font-bold text-base mb-2 pt-2">{day.day}</h3>
-            
-            <div className={`pb-4 space-y-3 sm:space-y-4 print:block ${(expandedDay === index || expandedDay === 'all') ? '' : 'hidden'}`}>
-                {/* Café da Manhã */}
-                <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
-                  <p className="font-medium text-yellow-900 mb-2 text-sm sm:text-base">☀️ Café da manhã</p>
-                  <p className="text-gray-700 mb-2 text-sm sm:text-base">{day.breakfast.base}</p>
-                  {day.breakfast.adaptations && Object.keys(day.breakfast.adaptations).length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {Object.entries(day.breakfast.adaptations).map(([name, adaptation]) => (
-                        <p key={name} className="text-xs sm:text-sm text-yellow-800">
-                          <strong>{name}:</strong> {adaptation}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Almoço */}
-                <div className="bg-orange-50 p-3 sm:p-4 rounded-lg">
-                  <p className="font-medium text-orange-900 mb-2 text-sm sm:text-base">🍽️ Almoço</p>
-                  <p className="text-gray-700 mb-2 text-sm sm:text-base">{day.lunch.base}</p>
-                  {day.lunch.adaptations && Object.keys(day.lunch.adaptations).length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {Object.entries(day.lunch.adaptations).map(([name, adaptation]) => (
-                        <p key={name} className="text-xs sm:text-sm text-orange-800">
-                          <strong>{name}:</strong> {adaptation}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Jantar */}
-                <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
-                  <p className="font-medium text-purple-900 mb-2 text-sm sm:text-base">🌙 Jantar</p>
-                  <p className="text-gray-700 mb-2 text-sm sm:text-base">{day.dinner.base}</p>
-                  {day.dinner.adaptations && Object.keys(day.dinner.adaptations).length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {Object.entries(day.dinner.adaptations).map(([name, adaptation]) => (
-                        <p key={name} className="text-xs sm:text-sm text-purple-800">
-                          <strong>{name}:</strong> {adaptation}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Lanches Individuais */}
-                {day.individualSnacks && (
-                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
-                    <p className="font-medium text-blue-900 mb-3 text-sm sm:text-base">🥤 Lanches Personalizados</p>
-                    <div className="space-y-3">
-                      {Object.entries(day.individualSnacks).map(([name, snacks]) => (
-                        <div key={name} className="bg-white p-3 rounded-lg">
-                          <p className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">{name}</p>
-                          <p className="text-xs sm:text-sm text-gray-700"><strong>Manhã:</strong> {snacks.snack1}</p>
-                          <p className="text-xs sm:text-sm text-gray-700"><strong>Tarde:</strong> {snacks.snack2}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Dica do Dia */}
-                {day.dayTip && (
-                  <div className="bg-pink-50 p-3 rounded-lg">
-                    <p className="font-medium text-pink-900 text-sm sm:text-base">💭 Dica do dia</p>
-                    <p className="text-gray-700 text-xs sm:text-sm">{day.dayTip}</p>
-                  </div>
-                )}
-            </div>
-          </div>
-        ))}
-      </div>
+        <ol className="space-y-0" role="list">
+          {menuData.days.map((day, index) => (
+            <li key={index}>
+              <DayCard
+                day={day}
+                index={index}
+                expandedDay={expandedDay}
+                onToggleDay={onToggleDay}
+              />
+            </li>
+          ))}
+        </ol>
+      </section>
 
       {/* Lista de Compras */}
-      <div 
-        className="bg-white rounded-2xl shadow-lg p-4 sm:p-6"
-        onClick={() => onShoppingListUsed && onShoppingListUsed()}
-      >
-        <div className="flex items-center gap-2 mb-4 sm:mb-6">
-          <ShoppingCart className="text-blue-600 flex-shrink-0" size={24} />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Lista de Compras</h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          {Object.entries(menuData.shoppingList).map(([category, items]) => (
-            <div key={category} className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2 text-sm sm:text-base capitalize">
-                {category.replace(/_/g, ' ')}
-              </h3>
-              <ul className="space-y-1">
-                {items.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs sm:text-sm">
-                    <span className="text-green-600 mt-1">✓</span>
-                    <span className="text-gray-700">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ShoppingList
+        shoppingList={menuData.shoppingList}
+        onInteraction={() => onShoppingListUsed && onShoppingListUsed()}
+      />
 
       {/* Gamificação */}
       {gamification && (
@@ -376,10 +231,25 @@ export const MenuStep = ({
 
       <button
         onClick={onReset}
-        className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base"
+        className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        aria-label="Criar um novo cardápio do zero"
       >
         Criar Novo Cardápio
       </button>
     </div>
   );
+};
+
+MenuStep.propTypes = {
+  menuData: MenuDataShape.isRequired,
+  profiles: PropTypes.arrayOf(ProfileShape).isRequired,
+  individualAnswers: IndividualAnswersShape.isRequired,
+  weeklyContext: WeeklyContextShape.isRequired,
+  lastWeekComparison: LastWeekComparisonShape,
+  expandedDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onToggleDay: PropTypes.func.isRequired,
+  onReset: PropTypes.func.isRequired,
+  onViewProgress: PropTypes.func.isRequired,
+  onShoppingListUsed: PropTypes.func.isRequired,
+  gamification: GamificationShape.isRequired,
 };

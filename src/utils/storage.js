@@ -3,6 +3,8 @@
  * Compatível com diferentes APIs de storage
  */
 
+import { logger } from './logger';
+
 const STORAGE_PREFIX = 'week-history:';
 
 /**
@@ -28,7 +30,7 @@ export const listStorageKeys = async (prefix = STORAGE_PREFIX) => {
     }
     return keys;
   } catch (error) {
-    console.error('Erro ao listar chaves do storage:', error);
+    logger.error('Erro ao listar chaves do storage:', error);
     return [];
   }
 };
@@ -53,7 +55,7 @@ export const getStorageItem = async (key) => {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : null;
   } catch (error) {
-    console.error('Erro ao obter item do storage:', error);
+    logger.error('Erro ao obter item do storage:', error);
     return null;
   }
 };
@@ -77,7 +79,7 @@ export const setStorageItem = async (key, value) => {
     // Fallback para localStorage
     localStorage.setItem(key, jsonValue);
   } catch (error) {
-    console.error('Erro ao salvar item no storage:', error);
+    logger.error('Erro ao salvar item no storage:', error);
     throw error;
   }
 };
@@ -96,6 +98,6 @@ export const removeStorageItem = async (key) => {
     
     localStorage.removeItem(key);
   } catch (error) {
-    console.error('Erro ao remover item do storage:', error);
+    logger.error('Erro ao remover item do storage:', error);
   }
 };

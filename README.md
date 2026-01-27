@@ -35,11 +35,19 @@ O app está hospedado na Vercel com deploy automático a cada push.
 
 ### Variáveis de Ambiente (Vercel)
 
-| Variável | Descrição |
-|----------|-----------|
-| `GROQ_API_KEY` | Chave da API Groq |
-| `VITE_SUPABASE_URL` | URL do projeto Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Chave anon do Supabase |
+#### Frontend (Vite)
+| Variável | Descrição | Obrigatória |
+|----------|-----------|-------------|
+| `VITE_API_URL` | URL do servidor backend (padrão: http://localhost:3001) | Não |
+| `VITE_SUPABASE_URL` | URL do projeto Supabase | Não |
+| `VITE_SUPABASE_ANON_KEY` | Chave anon do Supabase | Não |
+| `VITE_WEB3FORMS_ACCESS_KEY` | Chave de acesso do Web3Forms (formulário de contato) | Não |
+
+#### Backend (Server)
+| Variável | Descrição | Obrigatória |
+|----------|-----------|-------------|
+| `GROQ_API_KEY` | Chave da API Groq (ou `GOOGLE_API_KEY` / `ANTHROPIC_API_KEY`) | Sim |
+| `PORT` | Porta do servidor (padrão: 3001) | Não |
 
 ## 💻 Desenvolvimento Local
 
@@ -53,19 +61,35 @@ npm install
 
 ### 2. Configurar variáveis
 
-Crie um arquivo `.env` na raiz:
+Crie um arquivo `.env` na raiz (copie de `.env.example`):
 
 ```env
+# URL do servidor backend
 VITE_API_URL=http://localhost:3001
+
+# Supabase (opcional - para autenticação e histórico)
 VITE_SUPABASE_URL=sua_url_supabase
 VITE_SUPABASE_ANON_KEY=sua_chave_anon
+
+# Web3Forms (opcional - para formulário de contato)
+VITE_WEB3FORMS_ACCESS_KEY=sua_chave_web3forms
 ```
 
-E um arquivo `server/.env`:
+E um arquivo `server/.env` (copie de `server/.env.example`):
 
 ```env
+# Chave da API de IA (escolha uma)
 GROQ_API_KEY=sua_chave_groq
+# OU
+# GOOGLE_API_KEY=sua_chave_google
+# OU
+# ANTHROPIC_API_KEY=sua_chave_anthropic
+
+# Porta do servidor (opcional)
+PORT=3001
 ```
+
+**Nota:** As variáveis marcadas como opcionais permitem que o app funcione sem elas, mas algumas funcionalidades podem estar limitadas.
 
 ### 3. Executar
 
@@ -82,6 +106,31 @@ npm run dev
 ```
 
 Acesse: http://localhost:3000
+
+## 🧪 Testes
+
+O projeto usa **Vitest** para testes unitários e de integração.
+
+### Executar Testes
+
+```bash
+# Modo watch (desenvolvimento)
+npm test
+
+# Interface visual
+npm run test:ui
+
+# Com cobertura de código
+npm run test:coverage
+```
+
+### Cobertura de Testes
+
+- ✅ Utils: `bmi.js`, `menuLogic.js`, `storage.js`, `logger.js`
+- ✅ Hooks: `useGamification`, `useHistory`, `useMenuGeneration`
+- ✅ Integração: Fluxos completos de criação de perfil e geração de cardápio
+
+Veja mais detalhes em `src/test/README.md`.
 
 ## 📁 Estrutura
 

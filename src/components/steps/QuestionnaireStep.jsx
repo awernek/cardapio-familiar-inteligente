@@ -1,5 +1,7 @@
+import PropTypes from 'prop-types';
 import { User, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { calculateBMI } from '../../utils/bmi';
+import { ProfileShape, IndividualAnswersShape } from '../../types';
 
 /**
  * Componente de pergunta com opções em botão
@@ -10,30 +12,46 @@ const QuestionButtons = ({
   value, 
   onChange, 
   options,
-  columns = 2
+  columns = 2,
+  questionId
 }) => {
   const gridClass = columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2';
+  const hintId = hint ? `${questionId}-hint` : undefined;
   
   return (
-    <div className="mb-4">
-      <p className="font-medium text-gray-800 mb-1">{question}</p>
-      {hint && <p className="text-xs text-gray-500 mb-2">{hint}</p>}
-      <div className={`grid ${gridClass} gap-2`}>
+    <fieldset className="mb-4">
+      <legend className="font-medium text-gray-800 mb-1">{question}</legend>
+      {hint && (
+        <p id={hintId} className="text-xs text-gray-500 mb-2" role="note">
+          {hint}
+        </p>
+      )}
+      <div className={`grid ${gridClass} gap-2`} role="radiogroup" aria-labelledby={questionId} aria-describedby={hintId}>
         {options.map(option => (
           <button
             key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={value === option.value}
             onClick={() => onChange(option.value)}
-            className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onChange(option.value);
+              }
+            }}
+            className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
               value === option.value
                 ? 'bg-green-600 text-white shadow-sm'
                 : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
             }`}
+            aria-label={option.label}
           >
             {option.label}
           </button>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 };
 
@@ -44,19 +62,25 @@ const OptionalInput = ({
   label, 
   placeholder,
   value, 
-  onChange
+  onChange,
+  inputId
 }) => {
+  const labelId = `${inputId}-label`;
+  
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label id={labelId} htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
         {label} <span className="text-gray-400 font-normal">(opcional)</span>
       </label>
       <input
+        id={inputId}
         type="text"
         value={value || ''}
         onChange={onChange}
         placeholder={placeholder}
         className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        aria-labelledby={labelId}
+        aria-required="false"
       />
     </div>
   );
@@ -166,7 +190,8 @@ export const QuestionnaireStep = ({
       </div>
 
       {/* Perguntas principais */}
-      <div className="space-y-5">
+      <div className="space-y-5" role="group" aria-labelledby="questions-heading">
+        <h3 id="questions-heading" className="sr-only">Perguntas sobre a semana</h3>
         <QuestionButtons
           question="Como está o estresse essa semana?"
           hint="Isso influencia no tipo de comida que vou sugerir"
@@ -174,6 +199,7 @@ export const QuestionnaireStep = ({
           onChange={(val) => handleAnswerChange('stress', val)}
           options={stressOptions}
           columns={4}
+          questionId="stress-question"
         />
 
         <QuestionButtons
@@ -183,6 +209,7 @@ export const QuestionnaireStep = ({
           onChange={(val) => handleAnswerChange('sleep', val)}
           options={sleepOptions}
           columns={4}
+          questionId="sleep-question"
         />
 
         <QuestionButtons
@@ -191,6 +218,7 @@ export const QuestionnaireStep = ({
           onChange={(val) => handleAnswerChange('energy', val)}
           options={energyOptions}
           columns={4}
+          questionId="energy-question"
         />
 
         <QuestionButtons
@@ -200,6 +228,7 @@ export const QuestionnaireStep = ({
           onChange={(val) => handleAnswerChange('appetite', val)}
           options={appetiteOptions}
           columns={4}
+          questionId="appetite-question"
         />
       </div>
 
@@ -212,6 +241,7 @@ export const QuestionnaireStep = ({
           placeholder="Ex: dor de cabeça, enjoo, ansiedade..."
           value={currentAnswers.symptoms}
           onChange={(e) => handleAnswerChange('symptoms', e.target.value)}
+          inputId="symptoms-input"
         />
 
         <OptionalInput
@@ -219,10 +249,12 @@ export const QuestionnaireStep = ({
           placeholder="Ex: enjoou de frango, querendo comer doce..."
           value={currentAnswers.preferences}
           onChange={(e) => handleAnswerChange('preferences', e.target.value)}
+          inputId="preferences-input"
         />
 
         {/* Feedback da semana passada - simplificado */}
-        <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg">
+        <div className="bg-purple-50 border border-purple-100 p-4 rounded-lg" role="region" aria-labelledby="feedback-heading">
+          <h3 id="feedback-heading" className="sr-only">Feedback sobre semana anterior</h3>
           <QuestionButtons
             question="Conseguiu seguir o plano da semana passada?"
             value={currentAnswers.followedPlan}
@@ -232,6 +264,7 @@ export const QuestionnaireStep = ({
               ...followedPlanOptions
             ]}
             columns={4}
+            questionId="followed-plan-question"
           />
         </div>
       </div>
@@ -252,30 +285,36 @@ export const QuestionnaireStep = ({
       )}
 
       {/* Botões */}
-      <div className="flex gap-3 sm:gap-4 mt-6">
+      <nav className="flex gap-3 sm:gap-4 mt-6" aria-label="Navegação do questionário">
         <button
           onClick={onPrev}
-          className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm sm:text-base flex items-center justify-center gap-2"
+          className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm sm:text-base flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          aria-label="Voltar para pessoa anterior"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={18} aria-hidden="true" />
           Voltar
         </button>
         <button
           onClick={onNext}
           disabled={!canContinue}
-          className={`flex-1 py-3.5 rounded-xl font-semibold transition-colors text-sm sm:text-base flex items-center justify-center gap-2
+          className={`flex-1 py-3.5 rounded-xl font-semibold transition-colors text-sm sm:text-base flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
             ${canContinue 
               ? 'bg-green-600 text-white hover:bg-green-700' 
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
+          aria-label={canContinue 
+            ? (currentIndex < profiles.length - 1 ? "Avançar para próxima pessoa" : "Continuar para contexto semanal")
+            : "Complete as perguntas obrigatórias para continuar"
+          }
+          aria-disabled={!canContinue}
         >
           {currentIndex < profiles.length - 1 ? 'Próxima pessoa' : 'Continuar'}
-          <ChevronRight size={18} />
+          <ChevronRight size={18} aria-hidden="true" />
         </button>
-      </div>
+      </nav>
 
       {/* Indicador de progresso */}
-      <div className="mt-4 flex gap-2 justify-center">
+      <div className="mt-4 flex gap-2 justify-center" role="progressbar" aria-label="Progresso dos questionários" aria-valuenow={currentIndex + 1} aria-valuemin={1} aria-valuemax={profiles.length}>
         {profiles.map((p, i) => {
           const pAnswers = individualAnswers[p.id] || {};
           const pComplete = requiredFields.every(f => pAnswers[f] && pAnswers[f] !== '');
@@ -290,10 +329,21 @@ export const QuestionnaireStep = ({
                   : 'w-4 bg-gray-300'
               }`}
               title={p.name}
+              aria-label={`${p.name}: ${pComplete ? 'completo' : 'incompleto'}`}
+              role="img"
             />
           );
         })}
       </div>
     </div>
   );
+};
+
+QuestionnaireStep.propTypes = {
+  profiles: PropTypes.arrayOf(ProfileShape).isRequired,
+  currentIndex: PropTypes.number.isRequired,
+  individualAnswers: IndividualAnswersShape.isRequired,
+  onSaveAnswers: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
+  onPrev: PropTypes.func.isRequired,
 };

@@ -1,5 +1,9 @@
+import PropTypes from 'prop-types';
 import { Calendar, CheckCircle, Sparkles, AlertCircle, CheckCircle2, Clock, ShoppingCart, ChefHat, Wallet } from 'lucide-react';
 import { useMenuGeneration } from '../../hooks/useMenuGeneration';
+import { logger } from '../../utils/logger';
+import { errorHandler } from '../../utils/errorHandler';
+import { ProfileShape, IndividualAnswersShape, WeeklyContextShape, FamilyLocationShape } from '../../types';
 
 /**
  * Componente de pergunta conversacional
@@ -65,11 +69,11 @@ export const WeeklyContextStep = ({
   const { generateMenu, loading, error } = useMenuGeneration();
 
   const handleGenerate = async () => {
-    console.log('🚀 Iniciando geração do cardápio...');
-    console.log('Profiles:', profiles);
-    console.log('Individual Answers:', individualAnswers);
-    console.log('Weekly Context:', weeklyContext);
-    console.log('Family Location:', familyLocation);
+    logger.log('🚀 Iniciando geração do cardápio...');
+    logger.log('Profiles:', profiles);
+    logger.log('Individual Answers:', individualAnswers);
+    logger.log('Weekly Context:', weeklyContext);
+    logger.log('Family Location:', familyLocation);
     
     try {
       // Passa a localização junto com o contexto semanal
@@ -78,7 +82,7 @@ export const WeeklyContextStep = ({
         location: familyLocation
       };
       const menuData = await generateMenu(profiles, individualAnswers, contextWithLocation);
-      console.log('✅ Cardápio gerado com sucesso:', menuData);
+      logger.log('✅ Cardápio gerado com sucesso:', menuData);
       
       if (menuData) {
         onGenerateMenu(menuData);
@@ -86,8 +90,15 @@ export const WeeklyContextStep = ({
         throw new Error('Cardápio retornado está vazio');
       }
     } catch (err) {
-      console.error('❌ Erro ao gerar cardápio:', err);
-      alert(`Erro ao gerar cardápio: ${err.message || 'Erro desconhecido'}. Verifique se o servidor está rodando.`);
+      const handledError = errorHandler.handleError(err, {
+        context: 'WeeklyContextStep',
+        operation: 'handleGenerate',
+      });
+      logger.error('❌ Erro ao gerar cardápio:', err);
+      
+      // Mostra mensagem amigável ao usuário
+      const userMessage = handledError.message;
+      alert(`Erro ao gerar cardápio: ${userMessage}\n\nSe o problema persistir, verifique se o servidor está rodando.`);
     }
   };
 
@@ -256,41 +267,61 @@ export const WeeklyContextStep = ({
       )}
 
       {/* Botões */}
-      <div className="flex gap-3 sm:gap-4 mt-6">
+      <nav className="flex gap-3 sm:gap-4 mt-6" aria-label="Navegação do contexto semanal">
         <button
           onClick={onBack}
-          className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm sm:text-base"
+          className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          aria-label="Voltar para questionários"
         >
           Voltar
         </button>
         <button
           onClick={() => {
-            console.log('🔘 Botão clicado!');
-            console.log('canGenerate:', canGenerate);
-            console.log('loading:', loading);
+            logger.log('🔘 Botão clicado!');
+            logger.log('canGenerate:', canGenerate);
+            logger.log('loading:', loading);
             handleGenerate();
           }}
           disabled={!canGenerate || loading}
-          className={`flex-1 py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm sm:text-base
+          className={`flex-1 py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
             ${canGenerate && !loading 
               ? 'bg-green-600 text-white hover:bg-green-700' 
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
+          aria-label={loading 
+            ? "Gerando cardápio, aguarde..." 
+            : (canGenerate 
+              ? "Gerar cardápio personalizado" 
+              : "Complete todas as informações para gerar o cardápio")
+          }
+          aria-busy={loading}
+          aria-disabled={!canGenerate || loading}
         >
           {loading ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-current"></div>
+              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-current" aria-hidden="true"></div>
               <span className="hidden sm:inline">Gerando cardápio...</span>
               <span className="sm:hidden">Gerando...</span>
             </>
           ) : (
             <>
-              {canGenerate && <Sparkles size={18} />}
+              {canGenerate && <Sparkles size={18} aria-hidden="true" />}
               Gerar Cardápio
             </>
           )}
         </button>
-      </div>
+      </nav>
     </div>
   );
+};
+
+WeeklyContextStep.propTypes = {
+  profiles: PropTypes.arrayOf(ProfileShape).isRequired,
+  individualAnswers: IndividualAnswersShape.isRequired,
+  weeklyContext: WeeklyContextShape.isRequired,
+  familyLocation: FamilyLocationShape.isRequired,
+  onUpdateContext: PropTypes.func.isRequired,
+  onGenerateMenu: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+  onViewReport: PropTypes.func.isRequired,
 };

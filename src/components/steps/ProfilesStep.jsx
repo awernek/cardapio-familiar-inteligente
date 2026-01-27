@@ -1,5 +1,7 @@
+import PropTypes from 'prop-types';
 import { User, Plus, AlertCircle, CheckCircle2, MapPin, ChevronRight } from 'lucide-react';
 import { ProfileForm } from '../ProfileForm';
+import { ProfileShape, FamilyLocationShape } from '../../types';
 
 /**
  * Lista de estados brasileiros
@@ -59,15 +61,15 @@ export const ProfilesStep = ({
   const allProfilesComplete = profiles.length > 0 && incompleteProfiles.length === 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" role="main">
       {/* Card de Boas-vindas e Localização */}
-      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+      <section className="bg-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="welcome-heading">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true">
             <span className="text-xl">👋</span>
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+            <h2 id="welcome-heading" className="text-xl sm:text-2xl font-bold text-gray-800">
               Olá! Vamos criar seu cardápio?
             </h2>
             <p className="text-gray-600 mt-1">
@@ -77,20 +79,32 @@ export const ProfilesStep = ({
         </div>
 
         {/* Localização */}
-        <div className="bg-gray-50 rounded-xl p-4">
+        <div className="bg-gray-50 rounded-xl p-4" role="region" aria-labelledby="location-heading">
           <div className="flex items-center gap-2 mb-3">
-            <MapPin className="text-green-600" size={18} />
-            <span className="font-medium text-gray-700">Onde vocês moram?</span>
-            {hasLocation && <CheckCircle2 className="text-green-500 ml-auto" size={18} />}
+            <MapPin className="text-green-600" size={18} aria-hidden="true" />
+            <h3 id="location-heading" className="font-medium text-gray-700">Onde vocês moram?</h3>
+            {hasLocation && (
+              <CheckCircle2 
+                className="text-green-500 ml-auto" 
+                size={18} 
+                aria-label="Localização preenchida"
+                aria-hidden="false"
+              />
+            )}
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Estado</label>
+              <label htmlFor="location-state" className="block text-sm text-gray-600 mb-1">
+                Estado
+              </label>
               <select
+                id="location-state"
                 value={familyLocation?.state || ''}
                 onChange={(e) => onUpdateLocation({ ...familyLocation, state: e.target.value })}
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white text-sm sm:text-base"
+                aria-required="true"
+                aria-label="Selecione o estado"
               >
                 <option value="">Selecione o estado...</option>
                 {ESTADOS_BR.map(estado => (
@@ -101,18 +115,23 @@ export const ProfilesStep = ({
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Cidade</label>
+              <label htmlFor="location-city" className="block text-sm text-gray-600 mb-1">
+                Cidade
+              </label>
               <input
+                id="location-city"
                 type="text"
                 value={familyLocation?.city || ''}
                 onChange={(e) => onUpdateLocation({ ...familyLocation, city: e.target.value })}
                 placeholder="Ex: São Paulo"
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                aria-required="true"
+                aria-label="Digite o nome da cidade"
               />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Card de Perfis */}
       <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
@@ -167,16 +186,17 @@ export const ProfilesStep = ({
 
         <button
           onClick={onAddProfile}
-          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-green-500 hover:text-green-600 transition-colors flex items-center justify-center gap-2 mb-4 text-sm sm:text-base"
+          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-green-500 hover:text-green-600 transition-colors flex items-center justify-center gap-2 mb-4 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          aria-label={profiles.length === 0 ? "Adicionar primeira pessoa à família" : "Adicionar mais uma pessoa à família"}
         >
-          <Plus size={20} />
+          <Plus size={20} aria-hidden="true" />
           {profiles.length === 0 ? 'Adicionar primeira pessoa' : 'Adicionar mais alguém'}
         </button>
 
         {/* Mensagens de validação */}
         {!hasLocation && profiles.length > 0 && (
-          <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4 text-sm">
-            <MapPin className="text-blue-600 flex-shrink-0 mt-0.5" size={18} />
+          <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4 text-sm" role="alert" aria-live="polite">
+            <MapPin className="text-blue-600 flex-shrink-0 mt-0.5" size={18} aria-hidden="true" />
             <p className="text-blue-800">
               Não esqueça de informar sua cidade e estado acima
             </p>
@@ -184,8 +204,8 @@ export const ProfilesStep = ({
         )}
 
         {profiles.length > 0 && !allProfilesComplete && (
-          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mb-4 text-sm">
-            <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
+          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mb-4 text-sm" role="alert" aria-live="polite">
+            <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} aria-hidden="true" />
             <div>
               <p className="text-amber-800 font-medium">Faltam algumas informações</p>
               <p className="text-amber-700">
@@ -201,16 +221,18 @@ export const ProfilesStep = ({
         <button
           onClick={onContinue}
           disabled={!canContinue}
-          className={`w-full py-3.5 rounded-xl font-semibold transition-colors text-sm sm:text-base flex items-center justify-center gap-2
+          className={`w-full py-3.5 rounded-xl font-semibold transition-colors text-sm sm:text-base flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
             ${canContinue 
               ? 'bg-green-600 text-white hover:bg-green-700' 
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
+          aria-label={canContinue ? "Continuar para questionários individuais" : "Complete os perfis e a localização para continuar"}
+          aria-disabled={!canContinue}
         >
           {canContinue ? (
             <>
               Próximo passo
-              <ChevronRight size={20} />
+              <ChevronRight size={20} aria-hidden="true" />
             </>
           ) : (
             'Complete as informações acima'
@@ -219,4 +241,15 @@ export const ProfilesStep = ({
       </div>
     </div>
   );
+};
+
+ProfilesStep.propTypes = {
+  profiles: PropTypes.arrayOf(ProfileShape).isRequired,
+  familyLocation: FamilyLocationShape.isRequired,
+  onUpdateLocation: PropTypes.func.isRequired,
+  onAddProfile: PropTypes.func.isRequired,
+  onUpdateProfile: PropTypes.func.isRequired,
+  onRemoveProfile: PropTypes.func.isRequired,
+  onToggleAdvanced: PropTypes.func.isRequired,
+  onContinue: PropTypes.func.isRequired,
 };
