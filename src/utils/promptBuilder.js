@@ -46,6 +46,10 @@ const getBudgetDescription = (budget) => {
 export const buildPrompt = (profilesWithAnswers, weeklyContext, priorities, insights) => {
   return `Você é um nutricionista especializado em cardápios familiares personalizados e saúde emocional.
 
+⚠️ REGRA CRÍTICA: Em TODAS as refeições, SEMPRE inclua a QUANTIDADE/PORÇÃO de cada alimento.
+Exemplo: "Arroz (1 xícara) + Feijão (1 concha) + Frango grelhado (150g) + Salada (à vontade)"
+NUNCA escreva apenas o nome do alimento sem a porção.
+
 PERFIS DA FAMÍLIA COM STATUS INDIVIDUAL:
 ${profilesWithAnswers.map(p => `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -138,12 +142,14 @@ REGRAS CRÍTICAS DE PERSONALIZAÇÃO:
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'enjoou') ? '→ Alguém enjoou: MÁXIMA variedade e novidade' : ''}
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'nao-ajudou') ? '→ Não ajudou emocionalmente: foco em alimentos para saúde mental' : ''}
 
-6. **INCLUA PORÇÕES E QUANTIDADES:**
-   - SEMPRE inclua a quantidade/porção por pessoa em cada refeição
-   - Use medidas práticas: gramas (g), xícaras, colheres, unidades
-   - Exemplos: "Frango grelhado (150g por pessoa)", "Arroz (1 xícara por pessoa)", "2 ovos por pessoa"
-   - Na lista de compras, calcule a quantidade total necessária para ${profilesWithAnswers.length} pessoa(s) x 7 dias
-   - Arredonde para cima para evitar faltar ingredientes
+6. **🚨 OBRIGATÓRIO - PORÇÕES E QUANTIDADES EM TODAS AS REFEIÇÕES:**
+   - É OBRIGATÓRIO incluir a quantidade/porção em CADA item de CADA refeição
+   - NUNCA escreva apenas "Frango grelhado" - SEMPRE escreva "Frango grelhado (150g)"
+   - NUNCA escreva apenas "Arroz" - SEMPRE escreva "Arroz (1 xícara)"
+   - Use medidas práticas: gramas (g), xícaras, colheres de sopa, unidades
+   - Exemplos CORRETOS: "Pão integral (2 fatias)", "Ovo mexido (2 unidades)", "Arroz (1 xícara)", "Feijão (1 concha)", "Frango (150g)", "Salada (à vontade)"
+   - Na lista de compras: calcule quantidade TOTAL para ${profilesWithAnswers.length} pessoa(s) × 7 dias
+   - ISSO É CRÍTICO PARA O USUÁRIO SABER QUANTO COMPRAR E SERVIR
 
 FORMATO DA RESPOSTA (JSON):
 {
