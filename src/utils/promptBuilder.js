@@ -138,40 +138,47 @@ REGRAS CRÍTICAS DE PERSONALIZAÇÃO:
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'enjoou') ? '→ Alguém enjoou: MÁXIMA variedade e novidade' : ''}
    ${profilesWithAnswers.some(p => p.weeklyStatus?.notFollowedReason === 'nao-ajudou') ? '→ Não ajudou emocionalmente: foco em alimentos para saúde mental' : ''}
 
+6. **INCLUA PORÇÕES E QUANTIDADES:**
+   - SEMPRE inclua a quantidade/porção por pessoa em cada refeição
+   - Use medidas práticas: gramas (g), xícaras, colheres, unidades
+   - Exemplos: "Frango grelhado (150g por pessoa)", "Arroz (1 xícara por pessoa)", "2 ovos por pessoa"
+   - Na lista de compras, calcule a quantidade total necessária para ${profilesWithAnswers.length} pessoa(s) x 7 dias
+   - Arredonde para cima para evitar faltar ingredientes
+
 FORMATO DA RESPOSTA (JSON):
 {
   "days": [
     {
       "day": "Segunda-feira",
       "breakfast": {
-        "base": "Receita base para todos",
+        "base": "Pão integral (2 fatias) com queijo branco (30g) e café com leite (200ml)",
         "adaptations": {
-          "Nome da Pessoa": "Adaptação específica baseada nos insights"
+          "Nome da Pessoa": "Adaptação específica com porções ajustadas"
         }
       },
       "lunch": {
-        "base": "Receita base do almoço",
+        "base": "Arroz (1 xícara) + Feijão (1 concha) + Frango grelhado (150g) + Salada de alface e tomate (à vontade)",
         "adaptations": {}
       },
       "dinner": {
-        "base": "Receita base do jantar",
+        "base": "Sopa de legumes (1 tigela grande ~400ml) com torradas (3 unidades)",
         "adaptations": {}
       },
       "individualSnacks": {
         "Nome da Pessoa": {
-          "snack1": "Lanche manhã (considere insights: estresse/fome/energia)",
-          "snack2": "Lanche tarde (considere insights)"
+          "snack1": "1 banana + 3 castanhas",
+          "snack2": "Iogurte natural (170g) com granola (2 colheres de sopa)"
         }
       },
       "dayTip": "Dica específica do dia baseada nos insights"
     }
   ],
   "shoppingList": {
-    "frutas_vegetais": ["item1", "item2"],
-    "proteinas": ["item1", "item2"],
-    "graos_cereais": ["item1", "item2"],
-    "laticinios": ["item1", "item2"],
-    "temperos_outros": ["item1", "item2"]
+    "frutas_vegetais": ["Banana (14 unidades)", "Tomate (1kg)", "Alface (2 unidades)"],
+    "proteinas": ["Peito de frango (1,5kg)", "Ovos (2 dúzias)", "Carne moída (800g)"],
+    "graos_cereais": ["Arroz (2kg)", "Feijão (1kg)", "Pão integral (2 pacotes)"],
+    "laticinios": ["Leite (4 litros)", "Queijo branco (300g)", "Iogurte natural (4 unidades)"],
+    "temperos_outros": ["Óleo (1 unidade)", "Sal", "Alho (1 cabeça)"]
   },
   "weeklyTips": "Dicas gerais considerando os insights específicos de cada pessoa",
   "individualNotes": {
