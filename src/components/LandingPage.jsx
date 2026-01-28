@@ -125,8 +125,20 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
       answer: "Não é obrigatório. Você pode usar imediatamente sem cadastro. Os dados são usados apenas para gerar o cardápio e não são salvos." 
     },
     { 
+      question: "Funciona para dietas específicas?", 
+      answer: "Sim! Você pode informar restrições como vegetariano, vegano, sem glúten, sem lactose, low carb e outras. A IA adapta todas as sugestões respeitando essas restrições." 
+    },
+    { 
+      question: "Posso ajustar o cardápio depois de gerado?", 
+      answer: "Por enquanto o cardápio é gerado de uma vez. Se não gostar de alguma sugestão, você pode gerar um novo cardápio informando suas preferências com mais detalhes." 
+    },
+    { 
+      question: "Funciona para famílias com crianças pequenas?", 
+      answer: "Sim! Ao cadastrar o perfil, você informa a idade de cada pessoa. A IA considera as necessidades nutricionais específicas de bebês, crianças, adolescentes, adultos e idosos." 
+    },
+    { 
       question: "A IA substitui um nutricionista?", 
-      answer: "Não. O app é uma ferramenta de planejamento. Para orientação nutricional específica ou tratamento de condições de saúde, consulte um profissional." 
+      answer: "Não. O app é uma ferramenta de planejamento para facilitar o dia a dia. Para orientação nutricional específica, tratamento de condições de saúde ou dietas terapêuticas, consulte um profissional." 
     },
   ];
 
@@ -152,25 +164,25 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
       <main role="main">
       <section className="container mx-auto px-4 py-12 sm:py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Zap size={16} />
+          <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-fade-in-up">
+            <Zap size={16} className="animate-float" />
             Powered by Inteligência Artificial
           </div>
           
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up animation-delay-100">
             Acabe com o
             <span className="text-green-600"> "O que vou fazer pro jantar?"</span>
           </h1>
           
-          <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
             Planejamento alimentar semanal para famílias de 2, 3, 4 ou mais pessoas. 
             Cardápios personalizados que consideram saúde, rotina e orçamento.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300">
             <button
               onClick={onStartTrial}
-              className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all hover:scale-105 shadow-lg shadow-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition-all hover:scale-105 shadow-lg shadow-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 btn-shine"
               aria-label="Começar a usar o aplicativo gratuitamente"
             >
               Montar Meu Cardápio Grátis
@@ -178,7 +190,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
             </button>
             <button
               onClick={() => setShowDemo(true)}
-              className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 hover:scale-105"
               aria-label="Ver demonstração de como o aplicativo funciona"
             >
               <Play size={20} aria-hidden="true" />
@@ -186,27 +198,20 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
             </button>
           </div>
 
-          <p className="mt-6 text-sm text-gray-600 flex items-center justify-center gap-2">
-            <Shield size={16} />
-            Sem cadastro • 100% gratuito • Seus dados não são salvos
-          </p>
-        </div>
-      </section>
-
-      {/* Value Props */}
-      <section className="container mx-auto px-4 py-8">
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-gray-600 text-sm">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-green-500" />
-            <span>100% Gratuito</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Zap size={18} className="text-yellow-500" />
-            <span>Cardápio em segundos</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield size={18} className="text-blue-500" />
-            <span>Sem necessidade de cadastro</span>
+          {/* Trust badges - informações únicas sem repetição */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm text-gray-600 animate-fade-in-up animation-delay-400">
+            <div className="flex items-center gap-2 hover:text-green-600 transition-colors cursor-default">
+              <Shield size={16} className="text-green-500" />
+              <span>Sem cadastro obrigatório</span>
+            </div>
+            <div className="flex items-center gap-2 hover:text-yellow-600 transition-colors cursor-default">
+              <Zap size={16} className="text-yellow-500" />
+              <span>Cardápio em segundos</span>
+            </div>
+            <div className="flex items-center gap-2 hover:text-blue-600 transition-colors cursor-default">
+              <CheckCircle2 size={16} className="text-blue-500" />
+              <span>100% gratuito para começar</span>
+            </div>
           </div>
         </div>
       </section>
@@ -226,9 +231,10 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           {features.map((feature, index) => (
             <div 
               key={index}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover-lift"
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 {feature.icon}
               </div>
               <h3 className="font-semibold text-lg text-gray-900 mb-2">
@@ -239,6 +245,30 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="bg-gradient-to-r from-green-600 to-green-700 py-12 sm:py-16 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto text-center text-white">
+            <div className="transform hover:scale-110 transition-transform duration-300">
+              <div className="text-3xl sm:text-4xl font-bold mb-1">28</div>
+              <div className="text-green-100 text-sm sm:text-base">Refeições planejadas por semana</div>
+            </div>
+            <div className="transform hover:scale-110 transition-transform duration-300">
+              <div className="text-3xl sm:text-4xl font-bold mb-1">~2h</div>
+              <div className="text-green-100 text-sm sm:text-base">Economizadas no planejamento</div>
+            </div>
+            <div className="transform hover:scale-110 transition-transform duration-300">
+              <div className="text-3xl sm:text-4xl font-bold mb-1">30%</div>
+              <div className="text-green-100 text-sm sm:text-base">Menos desperdício de alimentos</div>
+            </div>
+            <div className="transform hover:scale-110 transition-transform duration-300">
+              <div className="text-3xl sm:text-4xl font-bold mb-1">&lt;2min</div>
+              <div className="text-green-100 text-sm sm:text-base">Para gerar o cardápio completo</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -256,8 +286,8 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
 
           <div className="flex flex-col sm:flex-row gap-8 max-w-4xl mx-auto">
             {steps.map((step, index) => (
-              <div key={index} className="flex-1 text-center">
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div key={index} className="flex-1 text-center group">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4 group-hover:bg-green-600 group-hover:text-white transition-all duration-300 group-hover:scale-110">
                   {step.number}
                 </div>
                 <h3 className="font-semibold text-lg text-gray-900 mb-2">
@@ -284,7 +314,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           {faqs.map((faq, index) => (
             <div 
               key={index}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+              className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover-lift"
             >
               <h3 className="font-semibold text-lg text-gray-900 mb-2">
                 {faq.question}
@@ -296,6 +326,18 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           ))}
         </div>
       </section>
+
+      {/* 
+        TODO: Testimonials Section - Oculto até ter depoimentos reais
+        Implementar de forma dinâmica buscando do banco de dados
+        
+        Estrutura pronta em:
+        - 3 cards com gradientes (verde, azul, roxo)
+        - Avatar com iniciais
+        - 5 estrelas
+        - Nome, descrição e localização
+        - Animação hover-lift
+      */}
 
       {/* About Section */}
       <section className="bg-white py-16 sm:py-24" id="sobre">
@@ -340,8 +382,8 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-3xl p-8 sm:p-12 text-center text-white max-w-4xl mx-auto">
-          <ChefHat size={48} className="mx-auto mb-4 opacity-90" />
+        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-3xl p-8 sm:p-12 text-center text-white max-w-4xl mx-auto shadow-2xl">
+          <ChefHat size={48} className="mx-auto mb-4 opacity-90 animate-float" />
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Pronto para acabar com o estresse na cozinha?
           </h2>
@@ -351,7 +393,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           </p>
           <button
             onClick={onStartTrial}
-            className="inline-flex items-center justify-center gap-2 bg-white text-green-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-white text-green-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
           >
             Montar Meu Cardápio Agora
             <ArrowRight size={20} />
@@ -400,7 +442,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
       {/* Floating Contact Button */}
       <button
         onClick={() => setShowContact(true)}
-        className="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 z-40 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        className="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110 z-40 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 animate-pulse-soft"
         aria-label="Fale conosco - Abrir formulário de contato"
       >
         <MessageCircle size={24} aria-hidden="true" />
