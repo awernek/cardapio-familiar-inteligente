@@ -5,6 +5,8 @@ import { ConsentScreen } from './components/auth/ConsentScreen';
 import { LandingPage } from './components/LandingPage';
 import { AppRouter } from './components/AppRouter';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { HistoryPage } from './components/HistoryPage';
+import { AccountPage } from './components/AccountPage';
 import { useHistory } from './hooks/useHistory';
 import { useAuth } from './contexts/AuthContext';
 import { useGamification } from './hooks/useGamification';
@@ -13,7 +15,7 @@ import { useAppInitialization } from './hooks/useAppInitialization';
 import { useProfiles } from './hooks/useProfiles';
 import { AchievementToast } from './components/gamification/AchievementToast';
 import { generateWeeklyPriorities, generateInsights, compareWithLastWeek } from './utils/menuLogic';
-import { saveMenu } from './services/menuService';
+import { saveMenu, deleteMenu } from './services/menuService';
 import { logger } from './utils/logger';
 import { errorHandler } from './utils/errorHandler';
 import { STEPS } from './constants';
@@ -21,6 +23,7 @@ import { STEPS } from './constants';
 function App() {
   const { user, loading: authLoading, hasAcceptedTerms, isAuthenticated, isGuest, startGuestMode, exitGuestMode } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
+  const [currentPage, setCurrentPage] = useState('app'); // 'app' | 'history' | 'account'
   
   // Hooks customizados - TODOS devem estar no topo, antes de qualquer return condicional
   const navigation = useAppNavigation();
@@ -181,6 +184,32 @@ function App() {
   
   const handleBackFromProgress = useCallback(() => navigation.navigateToStep(STEPS.MENU), [navigation]);
 
+  // Navegação para páginas especiais
+  const handleViewHistory = useCallback(() => setCurrentPage('history'), []);
+  const handleViewAccount = useCallback(() => setCurrentPage('account'), []);
+  const handleBackToApp = useCallback(() => setCurrentPage('app'), []);
+  
+  // Deletar cardápio do histórico
+  const handleDeleteMenu = useCallback(async (menuId) => {
+    try {
+      await deleteMenu(menuId);
+      setMenuHistory(prev => prev.filter(m => m.id !== menuId));
+      logger.log('🗑️ Cardápio excluído:', menuId);
+    } catch (error) {
+      errorHandler.handleError(error, {
+        context: 'App',
+        operation: 'deleteMenu',
+      });
+    }
+  }, [setMenuHistory]);
+  
+  // Visualizar cardápio do histórico
+  const handleViewMenuFromHistory = useCallback((menu) => {
+    setMenuData(menu.menu_data);
+    setCurrentPage('app');
+    navigation.navigateToStep(STEPS.MENU);
+  }, [navigation]);
+
   // Loading screen
   if (authLoading) {
     return (
@@ -233,9 +262,35 @@ function App() {
         />
         
         <main id="main-content" className="max-w-4xl mx-auto" role="main" tabIndex="-1">
-          <Header step={navigation.step} onCreateAccount={() => { exitGuestMode(); setShowLogin(true); }} />
+          <Header 
+            step={navigation.step} 
+            onCreateAccount={() => { exitGuestMode(); setShowLogin(true); }} 
+            onViewHistory={handleViewHistory}
+            onViewAccount={handleViewAccount}
+          />
 
-          <AppRouter
+          {/* Página de Histórico */}
+          {currentPage === 'history' && (
+            <HistoryPage 
+              menuHistory={menuHistory}
+              onBack={handleBackToApp}
+              onViewMenu={handleViewMenuFromHistory}
+              onDeleteMenu={handleDeleteMenu}
+            />
+          )}
+
+          {/* Página de Conta */}
+          {currentPage === 'account' && (
+            <AccountPage 
+              profiles={profiles}
+              menuHistory={menuHistory}
+              onBack={handleBackToApp}
+            />
+          )}
+
+          {/* App Principal */}
+          {currentPage === 'app' && (
+            <AppRouter
           step={navigation.step}
           profiles={profiles}
           familyLocation={familyLocation}
@@ -269,7 +324,8 @@ function App() {
           onBackFromReport={handleBackFromReport}
           onContinueFromReport={handleContinueFromReport}
           onBackFromProgress={handleBackFromProgress}
-        />
+          />
+          )}
         </main>
       </div>
     </ErrorBoundary>

@@ -187,6 +187,28 @@ export const getMenu = async (menuId) => {
   return data;
 };
 
+/**
+ * Exclui um cardápio
+ */
+export const deleteMenu = async (menuId) => {
+  if (!isSupabaseAvailable()) {
+    // Fallback: localStorage - precisaria implementar
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('menus')
+    .delete()
+    .eq('id', menuId);
+
+  if (error) {
+    logger.error('Erro ao excluir cardápio:', error);
+    throw error;
+  }
+
+  return true;
+};
+
 // =============================================
 // PERFIS
 // =============================================
