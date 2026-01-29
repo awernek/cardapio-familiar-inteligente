@@ -411,22 +411,28 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               <Sparkles className="text-green-600" size={20} />
               <span className="font-semibold text-gray-800">Cardápio Familiar Inteligente</span>
             </div>
-            <div className="flex gap-6 text-sm text-gray-600">
+            <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-gray-600">
+              <a 
+                href="/apoie"
+                className="hover:text-yellow-600 flex items-center gap-1 transition-colors"
+              >
+                💛 Apoie o projeto
+              </a>
               <button 
                 onClick={() => setShowPrivacy(true)}
-                className="hover:text-green-600"
+                className="hover:text-green-600 transition-colors"
               >
                 Privacidade
               </button>
               <button 
                 onClick={() => setShowTerms(true)}
-                className="hover:text-green-600"
+                className="hover:text-green-600 transition-colors"
               >
                 Termos
               </button>
               <button 
                 onClick={() => setShowContact(true)}
-                className="hover:text-green-600 flex items-center gap-1"
+                className="hover:text-green-600 flex items-center gap-1 transition-colors"
               >
                 <Mail size={14} />
                 Contato
