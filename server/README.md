@@ -1,4 +1,4 @@
-# 🖥️ Servidor Backend - Cardápio Familiar Inteligente
+# 🖥️ Servidor Backend - NURI (Nutrição Inteligente)
 
 Servidor Express que atua como proxy para APIs de IA, gerando cardápios personalizados.
 

@@ -194,7 +194,7 @@ SUGESTÕES DE USO DESTE RELATÓRIO:
 3. Salve para acompanhar evolução semanal da família
 4. Identifique padrões e tendências ao longo do tempo
 
-Gerado por: Cardápio Familiar Inteligente
+Gerado por: NURI - Nutrição Inteligente
 Data: ${today}
 `;
 

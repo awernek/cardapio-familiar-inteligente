@@ -1,6 +1,6 @@
-# 🍽️ Cardápio Familiar Inteligente
+# 🍽️ NURI — Nutrição Inteligente
 
-Planejamento alimentar semanal personalizado com IA para toda a família.
+**NURI** é planejamento alimentar semanal personalizado com IA para toda a família.
 
 **[Acesse o App](https://cardapio-familiar-inteligente.vercel.app)** — 100% gratuito, sem cadastro.
 

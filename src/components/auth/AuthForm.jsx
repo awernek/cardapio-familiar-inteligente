@@ -90,10 +90,10 @@ export const AuthForm = () => {
         {/* Logo/Título */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
-            🍽️ Cardápio Familiar
+            🍽️ NURI
           </h1>
           <p className="text-gray-600">
-            Planejamento alimentar inteligente para sua família
+            Nutrição Inteligente — planejamento alimentar para sua família
           </p>
         </div>
 

@@ -8,8 +8,8 @@ import { useAuth } from '../contexts/AuthContext';
  */
 export const Header = ({ 
   step, 
-  title = "Cardápio Familiar Inteligente", 
-  subtitle = "Alimentação personalizada para toda a família", 
+  title = "NURI", 
+  subtitle = "Nutrição Inteligente", 
   onCreateAccount,
   onViewHistory,
   onViewAccount 

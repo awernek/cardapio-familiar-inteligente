@@ -268,10 +268,10 @@ const TermsModal = ({ onClose }) => (
         <p><strong>Última atualização:</strong> Janeiro de 2026</p>
         
         <h3 className="font-bold text-gray-800">1. Aceitação dos Termos</h3>
-        <p>Ao utilizar o Cardápio Familiar Inteligente, você concorda com estes termos de uso.</p>
+        <p>Ao utilizar o NURI - Nutrição Inteligente, você concorda com estes termos de uso.</p>
 
         <h3 className="font-bold text-gray-800">2. Descrição do Serviço</h3>
-        <p>O Cardápio Familiar Inteligente é uma ferramenta que utiliza inteligência artificial 
+        <p>O NURI - Nutrição Inteligente é uma ferramenta que utiliza inteligência artificial 
         para gerar sugestões de cardápios personalizados com base nas informações fornecidas pelo usuário.</p>
 
         <h3 className="font-bold text-gray-800">3. Aviso Importante - Não é Orientação Médica</h3>

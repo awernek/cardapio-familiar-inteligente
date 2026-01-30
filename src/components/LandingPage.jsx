@@ -49,7 +49,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           from_name: contactForm.name,
           email: contactForm.email,
           message: contactForm.message,
-          subject: `Contato - Cardápio Familiar: ${contactForm.name}`,
+          subject: `Contato - NURI: ${contactForm.name}`,
           to: 'wernekdev@gmail.com'
         })
       });
@@ -66,7 +66,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
       }
     } catch (err) {
       // Fallback: abre email client
-      const mailtoLink = `mailto:wernekdev@gmail.com?subject=${encodeURIComponent(`Contato - Cardápio Familiar: ${contactForm.name}`)}&body=${encodeURIComponent(`Nome: ${contactForm.name}\nEmail: ${contactForm.email}\n\nMensagem:\n${contactForm.message}`)}`;
+      const mailtoLink = `mailto:wernekdev@gmail.com?subject=${encodeURIComponent(`Contato - NURI: ${contactForm.name}`)}&body=${encodeURIComponent(`Nome: ${contactForm.name}\nEmail: ${contactForm.email}\n\nMensagem:\n${contactForm.message}`)}`;
       window.open(mailtoLink, '_blank');
       setContactStatus('success');
       setTimeout(() => {
@@ -149,7 +149,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="text-green-600" size={28} />
-            <span className="font-bold text-xl text-gray-800">Cardápio Familiar</span>
+            <span className="font-bold text-xl text-gray-800">NURI</span>
           </div>
           <button
             onClick={onLogin}
@@ -176,7 +176,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto animate-fade-in-up animation-delay-200">
             Planejamento alimentar semanal para famílias de 2, 3, 4 ou mais pessoas. 
-            Cardápios personalizados que consideram saúde, rotina e orçamento.
+            Nutrição inteligente: cardápios personalizados que consideram saúde, rotina e orçamento.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-300">
@@ -365,7 +365,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
                     Percebi que a maior dificuldade não era cozinhar, mas <strong className="text-gray-900">decidir</strong>: o que comprar, o que preparar e como adaptar as refeições para diferentes fases da vida, níveis de estresse, apetite e rotina. As soluções existentes eram genéricas demais e não refletiam a realidade de uma família comum.
                   </p>
                   <p>
-                    Foi a partir dessa necessidade real que eu e minha esposa tivemos a ideia de criar o <strong className="text-gray-900">Cardápio Familiar Inteligente</strong>: uma ferramenta pensada para simplificar as decisões, organizar a lista de compras automaticamente e ajudar a planejar refeições possíveis, saudáveis e adaptadas a cada integrante da família.
+                    Foi a partir dessa necessidade real que eu e minha esposa tivemos a ideia de criar o <strong className="text-gray-900">NURI - Nutrição Inteligente</strong>: uma ferramenta pensada para simplificar as decisões, organizar a lista de compras automaticamente e ajudar a planejar refeições possíveis, saudáveis e adaptadas a cada integrante da família.
                   </p>
                   <p className="text-sm text-gray-600 border-t border-gray-200 pt-4 mt-4">
                     Atuo como engenheiro de software há mais de 10 anos. Essa experiência me permitiu transformar um problema cotidiano em uma solução prática, usando tecnologia para facilitar a vida das pessoas — começando pela minha própria família.
@@ -409,7 +409,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Sparkles className="text-green-600" size={20} />
-              <span className="font-semibold text-gray-800">Cardápio Familiar Inteligente</span>
+              <span className="font-semibold text-gray-800">NURI - Nutrição Inteligente</span>
             </div>
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-gray-600">
               <a 
@@ -439,7 +439,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               </button>
             </div>
             <p className="text-sm text-gray-600">
-              © 2026 Cardápio Familiar. Feito com ❤️ no Brasil.
+              © 2026 NURI. Feito com ❤️ no Brasil.
             </p>
           </div>
         </div>
@@ -570,10 +570,10 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               <p><strong>Última atualização:</strong> Janeiro de 2026</p>
               
               <h4 className="font-semibold text-gray-900">1. Aceitação</h4>
-              <p>Ao utilizar o Cardápio Familiar Inteligente, você concorda com estes termos de uso.</p>
+              <p>Ao utilizar o NURI - Nutrição Inteligente, você concorda com estes termos de uso.</p>
               
               <h4 className="font-semibold text-gray-900">2. Descrição do Serviço</h4>
-              <p>O Cardápio Familiar Inteligente é uma ferramenta de planejamento alimentar que utiliza inteligência artificial para gerar sugestões de cardápios personalizados.</p>
+              <p>O NURI - Nutrição Inteligente é uma ferramenta de planejamento alimentar que utiliza inteligência artificial para gerar sugestões de cardápios personalizados.</p>
               
               <h4 className="font-semibold text-gray-900">3. Limitações</h4>
               <p><strong>Este serviço NÃO substitui orientação médica ou nutricional profissional.</strong> As sugestões são geradas por IA e devem ser consideradas apenas como referência para planejamento.</p>
@@ -585,7 +585,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               <p>Não nos responsabilizamos por: reações alérgicas, problemas de saúde decorrentes do uso das sugestões, ou resultados diferentes dos esperados. Consulte sempre um nutricionista.</p>
               
               <h4 className="font-semibold text-gray-900">6. Propriedade Intelectual</h4>
-              <p>Todo o conteúdo do site (design, código, textos) é de propriedade do Cardápio Familiar Inteligente e está protegido por direitos autorais.</p>
+              <p>Todo o conteúdo do site (design, código, textos) é de propriedade do NURI - Nutrição Inteligente e está protegido por direitos autorais.</p>
               
               <h4 className="font-semibold text-gray-900">7. Modificações</h4>
               <p>Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações significativas serão comunicadas aos usuários.</p>

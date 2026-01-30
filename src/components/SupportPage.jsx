@@ -56,7 +56,7 @@ export const SupportPage = () => {
           </button>
           <div className="flex items-center gap-2">
             <Sparkles className="text-green-600" size={24} />
-            <span className="font-bold text-lg text-gray-800">Cardápio Familiar</span>
+            <span className="font-bold text-lg text-gray-800">NURI</span>
           </div>
         </nav>
       </header>
@@ -67,7 +67,7 @@ export const SupportPage = () => {
           {/* Título */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              💛 Apoie o Cardápio Familiar Inteligente
+              💛 Apoie o NURI - Nutrição Inteligente
             </h1>
             <p className="text-lg text-gray-600">
               Seu apoio é voluntário e faz diferença para manter este projeto vivo.
@@ -79,7 +79,7 @@ export const SupportPage = () => {
             {/* Texto explicativo */}
             <div className="space-y-4 text-gray-700 mb-8">
               <p>
-                O <strong className="text-gray-900">Cardápio Familiar Inteligente</strong> é um projeto 
+                O <strong className="text-gray-900">NURI - Nutrição Inteligente</strong> é um projeto 
                 criado com carinho para ajudar famílias a planejarem suas refeições de forma mais 
                 simples e saudável.
               </p>
@@ -196,9 +196,9 @@ export const SupportPage = () => {
         <div className="container mx-auto px-4 text-center text-sm text-gray-600">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Sparkles className="text-green-600" size={16} />
-            <span className="font-semibold text-gray-800">Cardápio Familiar Inteligente</span>
+            <span className="font-semibold text-gray-800">NURI - Nutrição Inteligente</span>
           </div>
-          <p>© 2026 Cardápio Familiar. Feito com ❤️ no Brasil.</p>
+          <p>© 2026 NURI. Feito com ❤️ no Brasil.</p>
         </div>
       </footer>
     </div>

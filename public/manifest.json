@@ -1,7 +1,7 @@
 {
-  "name": "Cardápio Familiar Inteligente",
-  "short_name": "Cardápio",
-  "description": "Planejamento alimentar semanal personalizado com IA para toda a família",
+  "name": "NURI - Nutrição Inteligente",
+  "short_name": "NURI",
+  "description": "Nutrição inteligente: cardápio semanal personalizado com IA para toda a família",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0fdf4",
