@@ -89,9 +89,7 @@ export const AuthForm = () => {
       <div className="w-full max-w-md">
         {/* Logo/Título */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
-            🍽️ NURI
-          </h1>
+          <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-14 sm:h-16 w-auto mx-auto mb-3 object-contain" />
           <p className="text-gray-600">
             Nutrição Inteligente — planejamento alimentar para sua família
           </p>

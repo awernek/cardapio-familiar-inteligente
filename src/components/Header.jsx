@@ -51,8 +51,8 @@ export const Header = ({
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <Sparkles className="text-green-600 flex-shrink-0" size={28} />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{title}</h1>
+            <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-11 sm:h-12 w-auto object-contain" />
+            <h1 className="sr-only">{title}</h1>
           </div>
           <p className="text-sm sm:text-base text-gray-600">{subtitle}</p>
         </div>

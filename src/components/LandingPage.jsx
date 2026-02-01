@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { 
-  Sparkles, 
   Users,
   User,
   Calendar, 
@@ -148,8 +147,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
       <header className="container mx-auto px-4 py-6" role="banner">
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="text-green-600" size={28} />
-            <span className="font-bold text-xl text-gray-800">NURI</span>
+            <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-14 sm:h-16 w-auto object-contain" />
           </div>
           <button
             onClick={onLogin}
@@ -408,8 +406,7 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="text-green-600" size={20} />
-              <span className="font-semibold text-gray-800">NURI - Nutrição Inteligente</span>
+              <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-11 sm:h-12 w-auto object-contain" />
             </div>
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-gray-600">
               <a 

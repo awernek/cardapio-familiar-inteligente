@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { 
-  Sparkles, 
   Heart,
   Copy, 
   Check,
@@ -55,8 +54,7 @@ export const SupportPage = () => {
             <span className="font-medium">Voltar</span>
           </button>
           <div className="flex items-center gap-2">
-            <Sparkles className="text-green-600" size={24} />
-            <span className="font-bold text-lg text-gray-800">NURI</span>
+            <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-11 w-auto object-contain" />
           </div>
         </nav>
       </header>
@@ -195,8 +193,7 @@ export const SupportPage = () => {
       <footer className="border-t border-gray-200 py-6 mt-12">
         <div className="container mx-auto px-4 text-center text-sm text-gray-600">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="text-green-600" size={16} />
-            <span className="font-semibold text-gray-800">NURI - Nutrição Inteligente</span>
+            <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-10 sm:h-11 w-auto object-contain" />
           </div>
           <p>© 2026 NURI. Feito com ❤️ no Brasil.</p>
         </div>
