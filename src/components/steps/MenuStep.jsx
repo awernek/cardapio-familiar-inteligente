@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Calendar } from 'lucide-react';
 import { generateWeeklyPriorities, generateInsights } from '../../utils/menuLogic';
@@ -105,6 +105,38 @@ export const MenuStep = ({
   
   // Verifica se todos os dias estão expandidos
   const allExpanded = expandedDay === 'all';
+
+  // Feedback para ações "Em breve" (trocar / variação)
+  const [mealFeedback, setMealFeedback] = useState(null);
+
+  const REPEAT_STORAGE_KEY = 'nuri_repeat_meals';
+
+  const handleReplaceMeal = useCallback((mealKey) => {
+    setMealFeedback({ message: 'Em breve você poderá trocar esta refeição por outra sugestão.', type: 'info' });
+    setTimeout(() => setMealFeedback(null), 4000);
+  }, []);
+
+  const handleRepeatMeal = useCallback((mealKey) => {
+    const [dayIndex, mealType] = mealKey.split('-');
+    const day = menuData.days[Number(dayIndex)];
+    const mealText = day?.[mealType]?.base || '';
+    try {
+      const stored = JSON.parse(localStorage.getItem(REPEAT_STORAGE_KEY) || '[]');
+      const entry = { mealKey, text: mealText, at: new Date().toISOString() };
+      const updated = [entry, ...stored.filter((e) => e.mealKey !== mealKey)].slice(0, 30);
+      localStorage.setItem(REPEAT_STORAGE_KEY, JSON.stringify(updated));
+      setMealFeedback({ message: 'Salvo! Vamos considerar na próxima geração.', type: 'success' });
+      setTimeout(() => setMealFeedback(null), 3000);
+    } catch (_) {
+      setMealFeedback({ message: 'Não foi possível salvar.', type: 'error' });
+      setTimeout(() => setMealFeedback(null), 3000);
+    }
+  }, [menuData.days]);
+
+  const handleVariationMeal = useCallback((mealKey) => {
+    setMealFeedback({ message: 'Sugestão de variações em breve!', type: 'info' });
+    setTimeout(() => setMealFeedback(null), 4000);
+  }, []);
   
   // Toggle expandir todos
   const toggleExpandAll = () => {
@@ -193,6 +225,23 @@ export const MenuStep = ({
         </section>
       )}
 
+      {/* Feedback de ação (repetir / em breve) */}
+      {mealFeedback && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`rounded-xl px-4 py-3 text-sm font-medium ${
+            mealFeedback.type === 'success'
+              ? 'bg-green-100 text-green-800'
+              : mealFeedback.type === 'error'
+                ? 'bg-red-100 text-red-800'
+                : 'bg-blue-100 text-blue-800'
+          }`}
+        >
+          {mealFeedback.message}
+        </div>
+      )}
+
       {/* Cardápio por Dia */}
       <section className="bg-white rounded-2xl shadow-lg p-4 sm:p-6" aria-labelledby="menu-heading">
         <div className="flex items-center gap-2 mb-4 sm:mb-6">
@@ -208,6 +257,9 @@ export const MenuStep = ({
                 index={index}
                 expandedDay={expandedDay}
                 onToggleDay={onToggleDay}
+                onReplaceMeal={handleReplaceMeal}
+                onRepeatMeal={handleRepeatMeal}
+                onVariationMeal={handleVariationMeal}
               />
             </li>
           ))}

@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { HelmetProvider } from 'react-helmet-async'
 import { Analytics } from '@vercel/analytics/react'
 import App from './App.jsx'
 import { SupportPage } from './components/SupportPage.jsx'
@@ -34,7 +35,9 @@ const Router = () => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Router />
-    <Analytics />
+    <HelmetProvider>
+      <Router />
+      <Analytics />
+    </HelmetProvider>
   </React.StrictMode>,
 )

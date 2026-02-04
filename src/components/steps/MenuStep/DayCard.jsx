@@ -2,12 +2,14 @@ import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { MenuDayShape } from '../../../types';
+import { MealItemActions } from './MealItemActions';
 
 /**
  * Componente de cardápio de um dia
  */
-export const DayCard = memo(({ day, index, expandedDay, onToggleDay }) => {
+export const DayCard = memo(({ day, index, expandedDay, onToggleDay, onReplaceMeal, onRepeatMeal, onVariationMeal }) => {
   const isExpanded = expandedDay === index || expandedDay === 'all';
+  const hasMealActions = onReplaceMeal || onRepeatMeal || onVariationMeal;
 
   return (
     <article className="border-b border-gray-200 last:border-0 print:border-b-2" aria-labelledby={`day-${index}-heading`}>
@@ -35,6 +37,15 @@ export const DayCard = memo(({ day, index, expandedDay, onToggleDay }) => {
         <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
           <p className="font-medium text-yellow-900 mb-2 text-sm sm:text-base">☀️ Café da manhã</p>
           <p className="text-gray-700 mb-2 text-sm sm:text-base">{day.breakfast.base}</p>
+          {hasMealActions && (
+            <MealItemActions
+              mealKey={`${index}-breakfast`}
+              mealLabel="café da manhã"
+              onReplace={onReplaceMeal}
+              onRepeat={onRepeatMeal}
+              onVariation={onVariationMeal}
+            />
+          )}
           {day.breakfast.adaptations && Object.keys(day.breakfast.adaptations).length > 0 && (
             <div className="mt-2 space-y-1">
               {Object.entries(day.breakfast.adaptations).map(([name, adaptation]) => (
@@ -50,6 +61,15 @@ export const DayCard = memo(({ day, index, expandedDay, onToggleDay }) => {
         <div className="bg-orange-50 p-3 sm:p-4 rounded-lg">
           <p className="font-medium text-orange-900 mb-2 text-sm sm:text-base">🍽️ Almoço</p>
           <p className="text-gray-700 mb-2 text-sm sm:text-base">{day.lunch.base}</p>
+          {hasMealActions && (
+            <MealItemActions
+              mealKey={`${index}-lunch`}
+              mealLabel="almoço"
+              onReplace={onReplaceMeal}
+              onRepeat={onRepeatMeal}
+              onVariation={onVariationMeal}
+            />
+          )}
           {day.lunch.adaptations && Object.keys(day.lunch.adaptations).length > 0 && (
             <div className="mt-2 space-y-1">
               {Object.entries(day.lunch.adaptations).map(([name, adaptation]) => (
@@ -65,6 +85,15 @@ export const DayCard = memo(({ day, index, expandedDay, onToggleDay }) => {
         <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
           <p className="font-medium text-purple-900 mb-2 text-sm sm:text-base">🌙 Jantar</p>
           <p className="text-gray-700 mb-2 text-sm sm:text-base">{day.dinner.base}</p>
+          {hasMealActions && (
+            <MealItemActions
+              mealKey={`${index}-dinner`}
+              mealLabel="jantar"
+              onReplace={onReplaceMeal}
+              onRepeat={onRepeatMeal}
+              onVariation={onVariationMeal}
+            />
+          )}
           {day.dinner.adaptations && Object.keys(day.dinner.adaptations).length > 0 && (
             <div className="mt-2 space-y-1">
               {Object.entries(day.dinner.adaptations).map(([name, adaptation]) => (
@@ -111,4 +140,7 @@ DayCard.propTypes = {
   index: PropTypes.number.isRequired,
   expandedDay: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onToggleDay: PropTypes.func.isRequired,
+  onReplaceMeal: PropTypes.func,
+  onRepeatMeal: PropTypes.func,
+  onVariationMeal: PropTypes.func,
 };

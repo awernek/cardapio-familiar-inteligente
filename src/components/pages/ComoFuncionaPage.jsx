@@ -1,7 +1,24 @@
+import { useMemo } from 'react';
 import { ArrowRight, ArrowLeft, Users, MessageSquare, Calendar, ChefHat } from 'lucide-react';
 import { SEOPage } from '../seo/SEOPage';
+import { buildFAQPageSchema } from '../../utils/seo';
 
 const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://www.nuri.app.br';
+
+const FAQS = [
+  {
+    question: 'Preciso me cadastrar?',
+    answer: 'Não. Você pode usar em modo convidado e gerar cardápios à vontade. Cadastro é opcional e serve para salvar histórico e perfis.',
+  },
+  {
+    question: 'É realmente grátis?',
+    answer: 'Sim. O NURI é gratuito para uso pessoal. Não pedimos cartão de crédito.',
+  },
+  {
+    question: 'Quanto tempo leva?',
+    answer: 'Menos de 5 minutos para preencher perfis e contexto. A geração do cardápio leva poucos segundos.',
+  },
+];
 
 export function ComoFuncionaPage() {
   const handleCta = () => {
@@ -12,12 +29,18 @@ export function ComoFuncionaPage() {
     window.location.href = '/';
   };
 
+  const faqSchema = useMemo(
+    () => buildFAQPageSchema(FAQS, `${BASE_URL}/como-funciona`),
+    []
+  );
+
   return (
     <SEOPage
       title="Como funciona o NURI - Cardápio Semanal Automático"
       description="Planeje suas refeições em 5 minutos. Cardápio personalizado, lista de compras e economia garantida. Sem cadastro obrigatório."
       keywords="cardápio semanal, planejamento alimentar, lista de compras, economia, como planejar refeições"
       url={`${BASE_URL}/como-funciona`}
+      schema={faqSchema}
     >
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
         <header className="container mx-auto px-4 py-6">
@@ -86,27 +109,15 @@ export function ComoFuncionaPage() {
             </article>
           </section>
 
-          <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-10">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Perguntas frequentes</h2>
+          <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 mb-10" aria-labelledby="faq-heading">
+            <h2 id="faq-heading" className="text-xl font-semibold text-gray-900 mb-4">Perguntas frequentes</h2>
             <dl className="space-y-4">
-              <div>
-                <dt className="font-medium text-gray-900">Preciso me cadastrar?</dt>
-                <dd className="text-gray-600 mt-1">
-                  Não. Você pode usar em modo convidado e gerar cardápios à vontade. Cadastro é opcional e serve para salvar histórico e perfis.
-                </dd>
-              </div>
-              <div>
-                <dt className="font-medium text-gray-900">É realmente grátis?</dt>
-                <dd className="text-gray-600 mt-1">
-                  Sim. O NURI é gratuito para uso pessoal. Não pedimos cartão de crédito.
-                </dd>
-              </div>
-              <div>
-                <dt className="font-medium text-gray-900">Quanto tempo leva?</dt>
-                <dd className="text-gray-600 mt-1">
-                  Menos de 5 minutos para preencher perfis e contexto. A geração do cardápio leva poucos segundos.
-                </dd>
-              </div>
+              {FAQS.map((faq, i) => (
+                <div key={i}>
+                  <dt className="font-medium text-gray-900">{faq.question}</dt>
+                  <dd className="text-gray-600 mt-1">{faq.answer}</dd>
+                </div>
+              ))}
             </dl>
           </section>
 

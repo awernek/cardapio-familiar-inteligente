@@ -67,3 +67,41 @@ export function applyMetaTags(meta) {
     if (d) d.setAttribute('content', prevDescription || '');
   };
 }
+
+/**
+ * Gera Schema.org FAQPage para rich snippets no Google.
+ * @param {Array<{ question: string, answer: string }>} faqs
+ * @param {string} [url] - URL da página
+ * @returns {Object} JSON-LD FAQPage
+ */
+export function buildFAQPageSchema(faqs, url) {
+  if (!faqs?.length) return null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(({ question, answer }) => ({
+      '@type': 'Question',
+      name: question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: answer,
+      },
+    })),
+    ...(url && { url }),
+  };
+}
+
+/**
+ * Gera Schema.org Organization (para home ou páginas institucionais).
+ * @param {Object} options
+ * @returns {Object} JSON-LD Organization
+ */
+export function buildOrganizationSchema({ name = 'NURI - Nutrição Inteligente', url, logo }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name,
+    ...(url && { url }),
+    ...(logo && { logo }),
+  };
+}
