@@ -7,6 +7,9 @@ import { SupportPage } from './components/SupportPage.jsx'
 import { ComoFuncionaPage } from './components/pages/ComoFuncionaPage.jsx'
 import { ParaQuemEPage } from './components/pages/ParaQuemEPage.jsx'
 import { ResetPasswordPage } from './components/auth/ResetPasswordPage.jsx'
+import { BlogListPage } from './components/pages/BlogListPage.jsx'
+import { BlogPostPage } from './components/pages/BlogPostPage.jsx'
+import { GoogleAnalytics } from './components/GoogleAnalytics.jsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { validateEnvVars } from './utils/envValidation'
 import './index.css'
@@ -25,6 +28,11 @@ const Router = () => {
   if (path === '/apoie') return <SupportPage />;
   if (path === '/como-funciona') return <ComoFuncionaPage />;
   if (path === '/para-quem-e') return <ParaQuemEPage />;
+  if (path === '/blog') return <BlogListPage />;
+  if (path.startsWith('/blog/')) {
+    const slug = path.slice('/blog/'.length).replace(/\/$/, '');
+    if (slug) return <BlogPostPage slug={slug} />;
+  }
 
   // Recuperação de senha (precisa do AuthProvider para Supabase processar o hash)
   if (path === '/redefinir-senha') {
@@ -46,6 +54,7 @@ const Router = () => {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HelmetProvider>
+      <GoogleAnalytics />
       <Router />
       <Analytics />
     </HelmetProvider>

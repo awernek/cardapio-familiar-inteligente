@@ -112,13 +112,14 @@ O app está hospedado na Vercel com deploy automático.
 
 ### Variáveis no Vercel
 
-- **Frontend:** `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (opcionais)
+- **Frontend:** `VITE_API_URL`, `VITE_APP_URL` (produção), `VITE_SUPABASE_*` (opcionais), `VITE_GA_MEASUREMENT_ID` (opcional, GA4)
 - **Backend / serverless:** `GOOGLE_API_KEY` ou `ANTHROPIC_API_KEY` ou `GROQ_API_KEY` (obrigatória pelo menos uma)
 
 ## 📚 Documentação
 
 - **[docs/PROJECT_INIT.md](./docs/PROJECT_INIT.md)** — Inicialização do projeto (visão geral, stack, fluxo, margem para melhorias — ideal para compartilhar com Claude ou nova equipe)
 - **[docs/API_SETUP.md](./docs/API_SETUP.md)** — Configuração das APIs de IA (Google Gemini, Anthropic)
+- **[docs/SEARCH_CONSOLE.md](./docs/SEARCH_CONSOLE.md)** — Configuração do Google Search Console e sitemap
 - **[server/README.md](./server/README.md)** — Documentação do servidor (endpoints, providers, rate limit)
 
 ## 🎯 Qualidade

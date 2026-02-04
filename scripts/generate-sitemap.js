@@ -17,6 +17,9 @@ const routes = [
   { url: '/', priority: '1.0', changefreq: 'weekly' },
   { url: '/como-funciona', priority: '0.8', changefreq: 'monthly' },
   { url: '/para-quem-e', priority: '0.8', changefreq: 'monthly' },
+  { url: '/blog', priority: '0.9', changefreq: 'weekly' },
+  { url: '/blog/cardapio-semanal-economico', priority: '0.7', changefreq: 'monthly' },
+  { url: '/blog/planejamento-alimentar-familiar', priority: '0.7', changefreq: 'monthly' },
   { url: '/apoie', priority: '0.5', changefreq: 'monthly' },
 ];
 
