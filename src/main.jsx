@@ -9,6 +9,8 @@ import { ParaQuemEPage } from './components/pages/ParaQuemEPage.jsx'
 import { ResetPasswordPage } from './components/auth/ResetPasswordPage.jsx'
 import { BlogListPage } from './components/pages/BlogListPage.jsx'
 import { BlogPostPage } from './components/pages/BlogPostPage.jsx'
+import { RecipesListPage } from './components/pages/RecipesListPage.jsx'
+import { RecipeDetailPage } from './components/pages/RecipeDetailPage.jsx'
 import { GoogleAnalytics } from './components/GoogleAnalytics.jsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { validateEnvVars } from './utils/envValidation'
@@ -32,6 +34,12 @@ const Router = () => {
   if (path.startsWith('/blog/')) {
     const slug = path.slice('/blog/'.length).replace(/\/$/, '');
     if (slug) return <BlogPostPage slug={slug} />;
+  }
+
+  if (path === '/receitas') return <RecipesListPage />;
+  if (path.startsWith('/receita/')) {
+    const slug = path.replace(/^\/receita\/?/, '').replace(/\/$/, '');
+    if (slug) return <AuthProvider><RecipeDetailPage slug={slug} /></AuthProvider>;
   }
 
   // Recuperação de senha (precisa do AuthProvider para Supabase processar o hash)

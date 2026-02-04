@@ -36,14 +36,22 @@ const getBudgetDescription = (budget) => {
 
 /**
  * Constrói o prompt completo para a IA gerar o cardápio
- * 
+ *
  * @param {Array} profilesWithAnswers - Array de perfis com respostas do questionário
  * @param {Object} weeklyContext - Contexto semanal (orçamento, tempo, etc.)
  * @param {Array} priorities - Prioridades nutricionais da semana
  * @param {Array} insights - Insights acionáveis para cada pessoa
+ * @param {Array<{text: string}>} [repeatMeals] - Pratos que o usuário pediu para repetir (localStorage)
  * @returns {string} Prompt formatado para a IA
  */
-export const buildPrompt = (profilesWithAnswers, weeklyContext, priorities, insights) => {
+export const buildPrompt = (profilesWithAnswers, weeklyContext, priorities, insights, repeatMeals = []) => {
+  const repeatSection = repeatMeals?.length > 0
+    ? `
+PRATOS QUE O USUÁRIO PEDIU PARA REPETIR (inclua quando fizer sentido no cardápio, mantendo variedade):
+${repeatMeals.map((r) => `  • ${r.text}`).join('\n')}
+`
+    : '';
+
   return `Você é um nutricionista especializado em cardápios familiares personalizados e saúde emocional.
 
 ⚠️ REGRA CRÍTICA: Em TODAS as refeições, SEMPRE inclua a QUANTIDADE/PORÇÃO de cada alimento.
@@ -101,6 +109,7 @@ ${insights.map(item => `
 ${item.name}:
 ${item.insights.map(insight => `  • ${insight}`).join('\n')}
 `).join('\n')}
+${repeatSection}
 
 TAREFA:
 Crie um cardápio semanal (7 dias) que seja ALTAMENTE ACIONÁVEL baseado nas PRIORIDADES e insights acima.
@@ -208,6 +217,62 @@ IMPORTANTE SOBRE A ESTIMATIVA DE CUSTO:
 - O disclaimer deve alertar sobre variações regionais
 
 Responda APENAS com o JSON, sem explicações adicionais.`;
+};
+
+const MEAL_LABELS = { breakfast: 'Café da manhã', lunch: 'Almoço', dinner: 'Jantar' };
+
+/**
+ * Monta o prompt para substituir uma única refeição no cardápio
+ * @param {Object} menuData - Cardápio atual (days, etc.)
+ * @param {number} dayIndex - Índice do dia (0-6)
+ * @param {string} mealType - 'breakfast' | 'lunch' | 'dinner'
+ * @param {Array} profiles - Perfis da família (para restrições)
+ * @param {Object} weeklyContext - Contexto semanal
+ * @returns {string} Prompt para a IA
+ */
+export const buildReplaceMealPrompt = (menuData, dayIndex, mealType, profiles, weeklyContext) => {
+  const day = menuData.days[dayIndex];
+  const current = day?.[mealType]?.base || '';
+  const dayName = day?.day || `Dia ${dayIndex + 1}`;
+  const mealLabel = MEAL_LABELS[mealType] || mealType;
+  const restrictions = profiles.map((p) => `${p.name}: ${p.restrictions || 'Nenhuma'}`).join('; ');
+  return `Você é um nutricionista. Tarefa: substituir APENAS uma refeição por outra opção equivalente.
+
+CARDÁPIO ATUAL (contexto): ${JSON.stringify(menuData.days.map((d) => ({ day: d.day, breakfast: d.breakfast?.base, lunch: d.lunch?.base, dinner: d.dinner?.base })))}
+
+REFEIÇÃO A SUBSTITUIR:
+- Dia: ${dayName}
+- Refeição: ${mealLabel}
+- Prato atual: ${current}
+
+RESTRIÇÕES DA FAMÍLIA: ${restrictions}
+ORÇAMENTO: ${weeklyContext.budget || 'normal'}. Use ingredientes acessíveis no Brasil.
+
+Gere UMA nova opção de prato para essa refeição, mantendo porções (ex.: "Arroz (1 xícara)", "Frango (150g)").
+Responda APENAS com este JSON, sem mais nada:
+{"base": "sua sugestão com porções", "adaptations": {}}`;
+};
+
+/**
+ * Monta o prompt para sugerir 2-3 variações de um prato
+ * @param {string} mealText - Texto do prato atual
+ * @param {string} mealType - 'breakfast' | 'lunch' | 'dinner'
+ * @param {Array} profiles - Perfis (restrições)
+ * @param {Object} weeklyContext - Contexto
+ * @returns {string} Prompt para a IA
+ */
+export const buildSuggestVariationsPrompt = (mealText, mealType, profiles, weeklyContext) => {
+  const mealLabel = MEAL_LABELS[mealType] || mealType;
+  const restrictions = profiles.map((p) => `${p.name}: ${p.restrictions || 'Nenhuma'}`).join('; ');
+  return `Você é um nutricionista. Tarefa: sugerir 2 ou 3 variações do mesmo tipo de prato.
+
+PRATO ATUAL (${mealLabel}): ${mealText}
+
+RESTRIÇÕES: ${restrictions}. Orçamento: ${weeklyContext.budget || 'normal'}. Ingredientes acessíveis no Brasil.
+
+Gere 2 ou 3 variações (mesmo perfil nutricional e tipo de refeição), cada uma com porções (ex.: "150g", "1 xícara").
+Responda APENAS com este JSON, sem mais nada:
+{"variations": [{"base": "opção 1 com porções", "adaptations": {}}, {"base": "opção 2 com porções", "adaptations": {}}]}`;
 };
 
 /**

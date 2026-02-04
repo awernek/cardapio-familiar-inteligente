@@ -61,6 +61,8 @@ export const AppRouter = ({
   onContinueFromReport,
   // Handlers de progresso
   onBackFromProgress,
+  // Ajustes no cardápio (trocar / variação)
+  onUpdateMeal,
 }) => {
   switch (step) {
     case STEPS.PROFILES:
@@ -135,6 +137,7 @@ export const AppRouter = ({
             onViewProgress={onViewProgress}
             onShoppingListUsed={onShoppingListUsed}
             gamification={gamification}
+            onUpdateMeal={onUpdateMeal}
           />
         </Suspense>
       );
@@ -190,4 +193,5 @@ AppRouter.propTypes = {
   onBackFromReport: PropTypes.func.isRequired,
   onContinueFromReport: PropTypes.func.isRequired,
   onBackFromProgress: PropTypes.func.isRequired,
+  onUpdateMeal: PropTypes.func,
 };

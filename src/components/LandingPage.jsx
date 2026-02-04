@@ -418,6 +418,9 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               <a href="/blog" className="hover:text-green-600 transition-colors">
                 Blog
               </a>
+              <a href="/receitas" className="hover:text-green-600 transition-colors">
+                Receitas
+              </a>
               <a 
                 href="/apoie"
                 className="hover:text-yellow-600 flex items-center gap-1 transition-colors"

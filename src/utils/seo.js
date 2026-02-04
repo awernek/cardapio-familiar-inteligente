@@ -105,3 +105,35 @@ export function buildOrganizationSchema({ name = 'NURI - Nutrição Inteligente'
     ...(logo && { logo }),
   };
 }
+
+/**
+ * Gera Schema.org Recipe para página de receita (rich snippets).
+ * @param {Object} recipe - { name, description, image, totalTime, cookTime, prepTime, recipeYield, recipeIngredient, recipeInstructions }
+ * @param {string} [url] - URL canônica da página
+ * @returns {Object} JSON-LD Recipe
+ */
+export function buildRecipeSchema(recipe, url) {
+  if (!recipe?.name) return null;
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Recipe',
+    name: recipe.name,
+    ...(recipe.description && { description: recipe.description }),
+    ...(recipe.image && { image: Array.isArray(recipe.image) ? recipe.image : [recipe.image] }),
+    ...(recipe.recipeYield && { recipeYield: String(recipe.recipeYield) }),
+    ...(recipe.recipeIngredient?.length && { recipeIngredient: recipe.recipeIngredient }),
+    ...(recipe.recipeInstructions?.length && {
+      recipeInstructions: recipe.recipeInstructions.map((step) =>
+        typeof step === 'string' ? { '@type': 'HowToStep', text: step } : { '@type': 'HowToStep', ...step }
+      ),
+    }),
+  };
+  if (recipe.prepTimeMinutes || recipe.cookTimeMinutes) {
+    const total = (Number(recipe.prepTimeMinutes) || 0) + (Number(recipe.cookTimeMinutes) || 0);
+    if (total > 0) schema.totalTime = `PT${total}M`;
+    if (recipe.cookTimeMinutes) schema.cookTime = `PT${recipe.cookTimeMinutes}M`;
+    if (recipe.prepTimeMinutes) schema.prepTime = `PT${recipe.prepTimeMinutes}M`;
+  }
+  if (url) schema.url = url;
+  return schema;
+}

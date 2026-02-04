@@ -7,6 +7,9 @@ import { MenuActions } from './MenuStep/MenuActions';
 import { CostEstimate } from './MenuStep/CostEstimate';
 import { DayCard } from './MenuStep/DayCard';
 import { ShoppingList } from './MenuStep/ShoppingList';
+import { VariationModal } from './MenuStep/VariationModal';
+import { SharePrompt } from './MenuStep/SharePrompt';
+import { replaceMeal, suggestVariations } from '../../services/menuAdjustmentsService';
 
 /**
  * Formata o cardápio para texto (WhatsApp/compartilhar)
@@ -85,8 +88,11 @@ export const MenuStep = ({
   onReset,
   onViewProgress,
   onShoppingListUsed,
-  gamification
+  gamification,
+  onUpdateMeal
 }) => {
+  const MEAL_LABELS = { breakfast: 'café da manhã', lunch: 'almoço', dinner: 'jantar' };
+
   // Memoizar cálculos pesados
   const priorities = useMemo(() => 
     generateWeeklyPriorities(profiles, individualAnswers, weeklyContext),
@@ -106,15 +112,31 @@ export const MenuStep = ({
   // Verifica se todos os dias estão expandidos
   const allExpanded = expandedDay === 'all';
 
-  // Feedback para ações "Em breve" (trocar / variação)
+  // Feedback para ações (trocar / variação / repetir)
   const [mealFeedback, setMealFeedback] = useState(null);
+  const [adjustmentLoading, setAdjustmentLoading] = useState(null);
+  const [variationModal, setVariationModal] = useState(null);
 
   const REPEAT_STORAGE_KEY = 'nuri_repeat_meals';
 
-  const handleReplaceMeal = useCallback((mealKey) => {
-    setMealFeedback({ message: 'Em breve você poderá trocar esta refeição por outra sugestão.', type: 'info' });
-    setTimeout(() => setMealFeedback(null), 4000);
-  }, []);
+  const handleReplaceMeal = useCallback(async (mealKey) => {
+    const [dayIndexStr, mealType] = mealKey.split('-');
+    const dayIndex = Number(dayIndexStr);
+    if (!onUpdateMeal || !menuData?.days?.[dayIndex]) return;
+    setAdjustmentLoading(mealKey);
+    setMealFeedback(null);
+    try {
+      const newMeal = await replaceMeal(menuData, dayIndex, mealType, profiles, weeklyContext);
+      onUpdateMeal(dayIndex, mealType, newMeal);
+      setMealFeedback({ message: 'Refeição trocada com sucesso!', type: 'success' });
+      setTimeout(() => setMealFeedback(null), 3000);
+    } catch (_) {
+      setMealFeedback({ message: 'Não foi possível trocar. Tente novamente.', type: 'error' });
+      setTimeout(() => setMealFeedback(null), 4000);
+    } finally {
+      setAdjustmentLoading(null);
+    }
+  }, [menuData, profiles, weeklyContext, onUpdateMeal]);
 
   const handleRepeatMeal = useCallback((mealKey) => {
     const [dayIndex, mealType] = mealKey.split('-');
@@ -133,10 +155,41 @@ export const MenuStep = ({
     }
   }, [menuData.days]);
 
-  const handleVariationMeal = useCallback((mealKey) => {
-    setMealFeedback({ message: 'Sugestão de variações em breve!', type: 'info' });
-    setTimeout(() => setMealFeedback(null), 4000);
-  }, []);
+  const handleVariationMeal = useCallback(async (mealKey) => {
+    const [dayIndexStr, mealType] = mealKey.split('-');
+    const day = menuData?.days?.[Number(dayIndexStr)];
+    const mealText = day?.[mealType]?.base || '';
+    if (!mealText || !onUpdateMeal) return;
+    setAdjustmentLoading(mealKey);
+    setMealFeedback(null);
+    try {
+      const { variations } = await suggestVariations(mealText, mealType, profiles, weeklyContext);
+      if (variations && variations.length > 0) {
+        setVariationModal({
+          mealKey,
+          variations,
+          mealLabel: MEAL_LABELS[mealType] || mealType,
+        });
+      } else {
+        setMealFeedback({ message: 'Nenhuma variação retornada. Tente novamente.', type: 'error' });
+        setTimeout(() => setMealFeedback(null), 3000);
+      }
+    } catch (_) {
+      setMealFeedback({ message: 'Não foi possível sugerir variações. Tente novamente.', type: 'error' });
+      setTimeout(() => setMealFeedback(null), 4000);
+    } finally {
+      setAdjustmentLoading(null);
+    }
+  }, [menuData, profiles, weeklyContext, onUpdateMeal]);
+
+  const handleVariationSelect = useCallback((variation) => {
+    if (!variationModal?.mealKey || !onUpdateMeal) return;
+    const [dayIndexStr, mealType] = variationModal.mealKey.split('-');
+    onUpdateMeal(Number(dayIndexStr), mealType, variation);
+    setVariationModal(null);
+    setMealFeedback({ message: 'Variação aplicada!', type: 'success' });
+    setTimeout(() => setMealFeedback(null), 3000);
+  }, [variationModal, onUpdateMeal]);
   
   // Toggle expandir todos
   const toggleExpandAll = () => {
@@ -225,20 +278,32 @@ export const MenuStep = ({
         </section>
       )}
 
-      {/* Feedback de ação (repetir / em breve) */}
-      {mealFeedback && (
+      {/* Modal de variações */}
+      {variationModal && (
+        <VariationModal
+          variations={variationModal.variations}
+          mealLabel={variationModal.mealLabel}
+          onSelect={handleVariationSelect}
+          onClose={() => setVariationModal(null)}
+        />
+      )}
+
+      {/* Feedback de ação (repetir / trocar / variação) */}
+      {(mealFeedback || adjustmentLoading) && (
         <div
           role="status"
           aria-live="polite"
           className={`rounded-xl px-4 py-3 text-sm font-medium ${
-            mealFeedback.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : mealFeedback.type === 'error'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-blue-100 text-blue-800'
+            adjustmentLoading
+              ? 'bg-blue-100 text-blue-800'
+              : mealFeedback.type === 'success'
+                ? 'bg-green-100 text-green-800'
+                : mealFeedback.type === 'error'
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-blue-100 text-blue-800'
           }`}
         >
-          {mealFeedback.message}
+          {adjustmentLoading ? 'Aguarde, gerando sugestão...' : mealFeedback?.message}
         </div>
       )}
 
@@ -272,6 +337,9 @@ export const MenuStep = ({
         onInteraction={() => onShoppingListUsed && onShoppingListUsed()}
       />
 
+      {/* Indicação orgânica: compartilhar cardápio / link do app */}
+      <SharePrompt shareCardapioText={formatMenuForShare(menuData, profiles)} />
+
       {/* Gamificação */}
       {gamification && (
         <GamificationCard 
@@ -304,4 +372,5 @@ MenuStep.propTypes = {
   onViewProgress: PropTypes.func.isRequired,
   onShoppingListUsed: PropTypes.func.isRequired,
   gamification: GamificationShape.isRequired,
+  onUpdateMeal: PropTypes.func,
 };

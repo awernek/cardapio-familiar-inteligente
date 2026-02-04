@@ -4,6 +4,20 @@ import { logger } from '../utils/logger';
 import { errorHandler } from '../utils/errorHandler';
 import { buildPrompt, calculateBMI } from '../utils/promptBuilder';
 
+const REPEAT_STORAGE_KEY = 'nuri_repeat_meals';
+
+/** Lê pratos "repetir" do localStorage para incluir no prompt da próxima geração */
+function getRepeatMealsFromStorage() {
+  try {
+    const raw = localStorage.getItem(REPEAT_STORAGE_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    return Array.isArray(list) ? list.map((r) => ({ text: r.text || '' })).filter((r) => r.text) : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Hook para geração de cardápio com IA
  * 
@@ -52,7 +66,8 @@ export const useMenuGeneration = () => {
       const priorities = generateWeeklyPriorities(profiles, individualAnswers, weeklyContext);
       const insights = generateInsights(profiles, individualAnswers);
 
-      const prompt = buildPrompt(profilesWithAnswers, weeklyContext, priorities, insights);
+      const repeatMeals = getRepeatMealsFromStorage();
+      const prompt = buildPrompt(profilesWithAnswers, weeklyContext, priorities, insights, repeatMeals);
 
       // Em produção (Vercel), usa caminho relativo. Em dev, usa localhost
       const isProduction = import.meta.env.PROD;

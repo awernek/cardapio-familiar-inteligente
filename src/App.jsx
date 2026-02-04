@@ -210,6 +210,19 @@ function App() {
     navigation.navigateToStep(STEPS.MENU);
   }, [navigation]);
 
+  // Atualizar uma refeição no cardápio (trocar / variação)
+  const handleUpdateMeal = useCallback((dayIndex, mealType, newMeal) => {
+    setMenuData((prev) => {
+      if (!prev?.days) return prev;
+      return {
+        ...prev,
+        days: prev.days.map((d, i) =>
+          i === dayIndex ? { ...d, [mealType]: { base: newMeal.base, adaptations: newMeal.adaptations || {} } } : d
+        ),
+      };
+    });
+  }, []);
+
   // Loading screen
   if (authLoading) {
     return (
@@ -324,6 +337,7 @@ function App() {
           onBackFromReport={handleBackFromReport}
           onContinueFromReport={handleContinueFromReport}
           onBackFromProgress={handleBackFromProgress}
+          onUpdateMeal={handleUpdateMeal}
           />
           )}
         </main>
