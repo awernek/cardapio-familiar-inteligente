@@ -46,8 +46,11 @@ npm install
 VITE_API_URL=http://localhost:3001
 VITE_SUPABASE_URL=sua_url_supabase        # Opcional
 VITE_SUPABASE_ANON_KEY=sua_chave_anon     # Opcional
+VITE_APP_URL=https://www.nuri.app.br      # Em produção: evita 404 no login social e na recuperação de senha
 VITE_WEB3FORMS_ACCESS_KEY=sua_chave       # Opcional (formulário de contato)
 ```
+
+**Login social e recuperação de senha (produção):** Configure no Supabase (Authentication → URL Configuration) a **Site URL** e as **Redirect URLs** com a URL exata do app (ex.: `https://www.nuri.app.br` e `https://www.nuri.app.br/redefinir-senha`). Defina `VITE_APP_URL` no Vercel com a mesma URL para evitar 404 no retorno do OAuth.
 
 **Backend** — Crie `server/.env` (copie de `server/.env.example`):
 

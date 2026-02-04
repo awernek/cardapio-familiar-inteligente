@@ -142,9 +142,19 @@ export const AuthForm = () => {
 
             {/* Senha */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Senha
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Senha
+                </label>
+                {isLogin && (
+                  <a
+                    href="/redefinir-senha"
+                    className="text-sm text-green-600 hover:text-green-700 hover:underline"
+                  >
+                    Esqueci minha senha
+                  </a>
+                )}
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input

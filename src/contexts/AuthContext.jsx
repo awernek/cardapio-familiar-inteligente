@@ -2,6 +2,14 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
 import { logger } from '../utils/logger';
 
+/** URL base do app para redirects (OAuth e recuperação de senha). Evita 404 em prod. */
+const getAppUrl = () => {
+  const env = import.meta.env.VITE_APP_URL;
+  if (env) return env.replace(/\/$/, '');
+  if (typeof window !== 'undefined') return window.location.origin;
+  return '';
+};
+
 const AuthContext = createContext({});
 
 export const useAuth = () => useContext(AuthContext);
@@ -10,18 +18,15 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
-  const [isGuest, setIsGuest] = useState(false); // Modo experimentar sem login
+  const [isGuest, setIsGuest] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
-    // Verificar sessão atual
     const checkSession = async () => {
       if (!isSupabaseAvailable()) {
-        // Modo offline/desenvolvimento
         const offlineUser = localStorage.getItem('offline_user');
         const acceptedTerms = localStorage.getItem('accepted_terms');
-        if (offlineUser) {
-          setUser(JSON.parse(offlineUser));
-        }
+        if (offlineUser) setUser(JSON.parse(offlineUser));
         setHasAcceptedTerms(acceptedTerms === 'true');
         setLoading(false);
         return;
@@ -30,8 +35,6 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
-        
-        // Verificar se aceitou termos
         if (session?.user) {
           const acceptedTerms = localStorage.getItem(`terms_${session.user.id}`);
           setHasAcceptedTerms(acceptedTerms === 'true');
@@ -45,20 +48,22 @@ export const AuthProvider = ({ children }) => {
 
     checkSession();
 
-    // Listener para mudanças de autenticação
     if (isSupabaseAvailable()) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
+          if (event === 'PASSWORD_RECOVERY') {
+            setIsPasswordRecovery(true);
+          }
           setUser(session?.user ?? null);
           if (session?.user) {
             const acceptedTerms = localStorage.getItem(`terms_${session.user.id}`);
             setHasAcceptedTerms(acceptedTerms === 'true');
           } else {
             setHasAcceptedTerms(false);
+            setIsPasswordRecovery(false);
           }
         }
       );
-
       return () => subscription.unsubscribe();
     }
   }, []);
@@ -85,24 +90,48 @@ export const AuthProvider = ({ children }) => {
     return { user: data.user, error: null };
   };
 
-  // Login social (Google, GitHub, etc.)
+  // Login social (Google, etc.) — redirectTo fixo evita 404 em prod (Vercel)
   const signInWithProvider = async (provider) => {
     if (!isSupabaseAvailable()) {
       return { user: null, error: { message: 'Login social não disponível offline' } };
     }
 
+    const redirectTo = getAppUrl() || window.location.origin;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin
+        redirectTo: redirectTo + '/'
       }
     });
-    
+
     if (error) {
       return { user: null, error };
     }
-    
     return { user: data.user, error: null };
+  };
+
+  // Recuperação de senha: envia email com link
+  const resetPasswordForEmail = async (email) => {
+    if (!isSupabaseAvailable()) {
+      return { error: { message: 'Recuperação não disponível offline' } };
+    }
+    const redirectTo = getAppUrl() || window.location.origin;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectTo + '/redefinir-senha'
+    });
+    return { error };
+  };
+
+  // Definir nova senha (após clicar no link do email)
+  const updatePassword = async (newPassword) => {
+    if (!isSupabaseAvailable()) {
+      return { error: { message: 'Indisponível' } };
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (!error) {
+      setIsPasswordRecovery(false);
+    }
+    return { error };
   };
 
   // Cadastro com email/senha
@@ -193,10 +222,14 @@ export const AuthProvider = ({ children }) => {
     loading,
     hasAcceptedTerms,
     isGuest,
+    isPasswordRecovery,
     signIn,
     signUp,
     signInWithProvider,
     signOut,
+    resetPasswordForEmail,
+    updatePassword,
+    clearPasswordRecovery: () => setIsPasswordRecovery(false),
     acceptTerms,
     revokeConsentAndDeleteData,
     startGuestMode,

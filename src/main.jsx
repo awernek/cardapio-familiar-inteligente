@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { SupportPage } from './components/SupportPage.jsx'
 import { ComoFuncionaPage } from './components/pages/ComoFuncionaPage.jsx'
 import { ParaQuemEPage } from './components/pages/ParaQuemEPage.jsx'
+import { ResetPasswordPage } from './components/auth/ResetPasswordPage.jsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { validateEnvVars } from './utils/envValidation'
 import './index.css'
@@ -24,6 +25,15 @@ const Router = () => {
   if (path === '/apoie') return <SupportPage />;
   if (path === '/como-funciona') return <ComoFuncionaPage />;
   if (path === '/para-quem-e') return <ParaQuemEPage />;
+
+  // Recuperação de senha (precisa do AuthProvider para Supabase processar o hash)
+  if (path === '/redefinir-senha') {
+    return (
+      <AuthProvider>
+        <ResetPasswordPage />
+      </AuthProvider>
+    );
+  }
   
   // Rota padrão - app principal
   return (
