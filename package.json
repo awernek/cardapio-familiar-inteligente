@@ -5,7 +5,8 @@
   "description": "MVP para criar cardápios familiares com resposta de IA e nutricionista",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generate-sitemap.js && vite build",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest",

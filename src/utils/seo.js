@@ -1,0 +1,69 @@
+/**
+ * Utilitários para SEO: meta tags e dados estruturados.
+ * Use com SEOPage ou aplicando manualmente no document.
+ */
+
+const DEFAULT_KEYWORDS = 'cardápio semanal, planejamento alimentar, lista de compras, receitas familiares, economia mercado, o que fazer pro jantar';
+
+/**
+ * Gera objeto com meta tags para uma página.
+ * @param {Object} options
+ * @param {string} options.title - Título da página (será sufixado com " | NURI")
+ * @param {string} options.description - Meta description
+ * @param {string} [options.keywords] - Meta keywords (opcional)
+ * @param {string} [options.image] - URL da imagem OG (fallback: /og-image.svg)
+ * @param {string} [options.url] - URL canônica da página
+ * @returns {Object} Objeto com title, description, keywords e propriedades og/twitter
+ */
+export function generateMetaTags({ title, description, keywords = DEFAULT_KEYWORDS, image, url }) {
+  const baseTitle = title ? `${title} | NURI - Nutrição Inteligente` : 'NURI - Nutrição Inteligente';
+  const imageUrl = image || (typeof window !== 'undefined' ? `${window.location.origin}/og-image.svg` : '/og-image.svg');
+  const canonicalUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+
+  return {
+    title: baseTitle,
+    description,
+    keywords,
+    'og:title': title || 'NURI - Nutrição Inteligente',
+    'og:description': description,
+    'og:image': imageUrl.startsWith('http') ? imageUrl : `${typeof window !== 'undefined' ? window.location.origin : ''}${imageUrl}`,
+    'og:url': canonicalUrl,
+    'og:type': 'website',
+    'og:locale': 'pt_BR',
+    'twitter:card': 'summary_large_image',
+    'twitter:title': title || 'NURI - Nutrição Inteligente',
+    'twitter:description': description,
+    'twitter:image': imageUrl.startsWith('http') ? imageUrl : undefined,
+    canonical: canonicalUrl,
+  };
+}
+
+/**
+ * Aplica meta tags no document (title + description).
+ * Útil para páginas estáticas que não usam react-helmet.
+ * @param {Object} meta - Objeto retornado por generateMetaTags
+ * @returns {Function} Função de cleanup para restaurar valores anteriores (chame no unmount)
+ */
+export function applyMetaTags(meta) {
+  const prevTitle = document.title;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  const prevDescription = metaDesc ? metaDesc.getAttribute('content') : null;
+
+  document.title = meta.title || prevTitle;
+  if (meta.description) {
+    if (!metaDesc) {
+      const el = document.createElement('meta');
+      el.name = 'description';
+      el.content = meta.description;
+      document.head.appendChild(el);
+    } else {
+      metaDesc.setAttribute('content', meta.description);
+    }
+  }
+
+  return () => {
+    document.title = prevTitle;
+    const d = document.querySelector('meta[name="description"]');
+    if (d) d.setAttribute('content', prevDescription || '');
+  };
+}

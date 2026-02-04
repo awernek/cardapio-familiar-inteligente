@@ -409,6 +409,12 @@ export const LandingPage = ({ onStartTrial, onLogin }) => {
               <img src="/nuri-logo-horizontal.png" alt="NURI - Nutrição Inteligente" className="h-11 sm:h-12 w-auto object-contain" />
             </div>
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-gray-600">
+              <a href="/como-funciona" className="hover:text-green-600 transition-colors">
+                Como funciona
+              </a>
+              <a href="/para-quem-e" className="hover:text-green-600 transition-colors">
+                Para quem é
+              </a>
               <a 
                 href="/apoie"
                 className="hover:text-yellow-600 flex items-center gap-1 transition-colors"

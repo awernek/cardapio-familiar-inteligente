@@ -114,6 +114,7 @@ O app está hospedado na Vercel com deploy automático.
 
 ## 📚 Documentação
 
+- **[docs/PROJECT_INIT.md](./docs/PROJECT_INIT.md)** — Inicialização do projeto (visão geral, stack, fluxo, margem para melhorias — ideal para compartilhar com Claude ou nova equipe)
 - **[docs/API_SETUP.md](./docs/API_SETUP.md)** — Configuração das APIs de IA (Google Gemini, Anthropic)
 - **[server/README.md](./server/README.md)** — Documentação do servidor (endpoints, providers, rate limit)
 

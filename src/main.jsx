@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { Analytics } from '@vercel/analytics/react'
 import App from './App.jsx'
 import { SupportPage } from './components/SupportPage.jsx'
+import { ComoFuncionaPage } from './components/pages/ComoFuncionaPage.jsx'
+import { ParaQuemEPage } from './components/pages/ParaQuemEPage.jsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { validateEnvVars } from './utils/envValidation'
 import './index.css'
@@ -15,12 +17,12 @@ validateEnvVars();
  * Detecta a rota atual e renderiza o componente apropriado
  */
 const Router = () => {
-  const path = window.location.pathname;
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
   
-  // Rota /apoie - página de apoio via Pix
-  if (path === '/apoie' || path === '/apoie/') {
-    return <SupportPage />;
-  }
+  // Páginas estáticas (SEO)
+  if (path === '/apoie') return <SupportPage />;
+  if (path === '/como-funciona') return <ComoFuncionaPage />;
+  if (path === '/para-quem-e') return <ParaQuemEPage />;
   
   // Rota padrão - app principal
   return (
