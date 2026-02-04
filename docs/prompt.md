@@ -921,52 +921,51 @@ export function useReferral(userId) {
 
 ## CHECKLIST DE IMPLEMENTAÇÃO
 
-### Sprint 1-2: SEO (Prioridade ALTA)
-- [x] Criar componente `<SEOPage>` com meta tags (sem react-helmet: applyMetaTags em utils/seo.js)
+**Última atualização:** fev/2026 — Sprints reorganizados por estado (feito / próximo / backlog).
+
+---
+
+### ✅ SPRINT SEO — CONCLUÍDO
+- [x] Criar componente `<SEOPage>` com meta tags (react-helmet-async)
 - [x] Implementar página `/como-funciona`
 - [x] Implementar página `/para-quem-e`
-- [ ] Criar estrutura de `/blog`
-- [ ] Escrever 5 artigos de blog iniciais
+- [x] Criar estrutura de `/blog` (listagem + `/blog/[slug]`)
+- [x] Escrever 5 artigos de blog iniciais (cardápio econômico, planejamento familiar, receitas 30min, economia mercado, lista compras)
 - [x] Configurar sitemap.xml automático (scripts/generate-sitemap.js no build)
-- [ ] Adicionar Schema.org (Organization, FAQPage) nas páginas estáticas
-- [ ] Configurar Open Graph por página (hoje index.html tem OG global)
-- [ ] Testar compartilhamento no WhatsApp/Facebook
-- [x] Criar robots.txt (já existe em public/robots.txt)
-- [ ] Configurar Google Search Console
-- [ ] Configurar Google Analytics 4
+- [x] Adicionar Schema.org FAQPage em `/como-funciona`; Article nos posts do blog
+- [x] Configurar Open Graph por página (SEOPage + Helmet)
+- [x] Criar robots.txt (public/robots.txt)
+- [x] Configurar Google Search Console (verificação + sitemap)
+- [x] Configurar Google Analytics 4 no código (variável `VITE_GA_MEASUREMENT_ID` no Vercel)
+- [ ] Testar compartilhamento no WhatsApp/Facebook (manual)
 
-### Sprint 3-4: Valor Percebido (Prioridade MÉDIA)
-- [ ] Criar componente `<MealActions>`
-- [ ] Implementar hook `useMenuAdjustments`
-- [ ] Adicionar ação "Não gostei, trocar"
-- [ ] Adicionar ação "Repetir semana que vem"
-- [ ] Adicionar ação "Sugerir variação"
-- [ ] Criar componente `<WeeklyProgress>`
-- [ ] Implementar hook `useProgressMetrics`
-- [ ] Calcular streak de semanas
-- [ ] Comparar melhorias (sono, energia, etc.)
-- [ ] Calcular economia mensal
+---
 
-### Sprint 5-6: Biblioteca de Receitas (Prioridade MÉDIA)
-- [ ] Criar tabela `public_recipes` no Supabase
-- [ ] Configurar RLS (Row Level Security)
-- [ ] Criar página `/receitas`
-- [ ] Criar componente `<RecipeCard>`
-- [ ] Criar componente `<RecipeFilters>`
-- [ ] Implementar rota `/receita/[slug]`
-- [ ] Adicionar Schema.org para receitas
-- [ ] Implementar contador de visualizações
-- [ ] Adicionar botão "Salvar receita"
-- [ ] Implementar busca de receitas
+### 🔄 PRÓXIMO: Valor percebido no cardápio (Prioridade 1)
+- [x] Criar componente por refeição (MealItemActions: Trocar, Repetir, Variação)
+- [x] Ação "Repetir semana que vem" (salva no localStorage)
+- [ ] Implementar **Trocar** de verdade (endpoint ou reuso generate-menu para substituir 1 refeição)
+- [ ] Implementar **Sugerir variação** de verdade
+- [ ] Usar pratos "Repetir" (localStorage) na próxima geração de cardápio
+- [ ] (Opcional) Extrair lógica para hook `useMenuAdjustments`
+- [ ] Criar componente `<WeeklyProgress>` (streak, melhorias, economia)
+- [ ] Implementar hook `useProgressMetrics` e métricas (streak, comparação sono/energia, economia mensal)
 
-### Sprint 7-8: Indicação (Prioridade BAIXA)
+---
+
+### 📋 PRIORIDADE 2: Indicação orgânica
 - [ ] Criar componente `<SharePrompt>`
-- [ ] Implementar compartilhamento WhatsApp
-- [ ] Implementar compartilhamento nativo (mobile)
-- [ ] Implementar copiar link
-- [ ] Adicionar gatilho após geração de cardápio
-- [ ] (Opcional) Criar sistema de referral
-- [ ] (Opcional) Implementar recompensas por indicação
+- [ ] Implementar compartilhamento WhatsApp + copiar link + share nativo (mobile)
+- [ ] Adicionar gatilho após geração de cardápio (ex.: 5s depois, 1x por sessão)
+- [ ] (Opcional) Sistema de referral e recompensas
+
+---
+
+### 📋 PRIORIDADE 3: Biblioteca de receitas (maior esforço)
+- [ ] Criar tabela `public_recipes` no Supabase + RLS
+- [ ] Criar página `/receitas` (listagem) + `<RecipeCard>`, `<RecipeFilters>`
+- [ ] Implementar rota `/receita/[slug]` (detalhe)
+- [ ] Schema.org Recipe, contador de visualizações, botão "Salvar receita", busca
 
 ---
 

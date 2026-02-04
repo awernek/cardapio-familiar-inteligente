@@ -20,6 +20,9 @@ const routes = [
   { url: '/blog', priority: '0.9', changefreq: 'weekly' },
   { url: '/blog/cardapio-semanal-economico', priority: '0.7', changefreq: 'monthly' },
   { url: '/blog/planejamento-alimentar-familiar', priority: '0.7', changefreq: 'monthly' },
+  { url: '/blog/receitas-rapidas-30min', priority: '0.7', changefreq: 'monthly' },
+  { url: '/blog/economia-mercado', priority: '0.7', changefreq: 'monthly' },
+  { url: '/blog/lista-de-compras-inteligente', priority: '0.7', changefreq: 'monthly' },
   { url: '/apoie', priority: '0.5', changefreq: 'monthly' },
 ];
 
